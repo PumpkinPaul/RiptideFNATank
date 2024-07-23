@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ThirdParty\Riptide\RiptideNetworking\RiptideNetworking\RiptideNetworking.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="FNA">
+      <HintPath>..\..\Deploy\Dependencies\Windows\FNA.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

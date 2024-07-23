@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <Description>Riptide FNA Tank Client</Description>
+    <Copyright>Copyright © 2024</Copyright>
+    <Authors>Pumpkin Games</Authors>
+    <PlatformTarget>x64</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion)</FileVersion>
+    <Version>$(AssemblyVersion)</Version>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG_TOOLS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants)TRACE;</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="StbTrueTypeSharp" Version="1.26.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ThirdParty\Riptide\RiptideNetworking\RiptideNetworking\RiptideNetworking.csproj" />
+    <ProjectReference Include="..\RiptideFNATankCommon\RiptideFNATankCommon.csproj" />
+    <ProjectReference Include="..\Wombat\Wombat.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="FNA">
+      <HintPath>..\..\Deploy\Dependencies\Windows\FNA.dll</HintPath>
+    </Reference>
+    <Reference Include="MoonTools.ECS">
+      <HintPath>..\..\Deploy\Dependencies\Windows\MoonTools.ECS.dll</HintPath>
+    </Reference>
+    <Reference Include="SpriteFontPlus.FNA">
+      <HintPath>..\..\Deploy\Dependencies\Windows\SpriteFontPlus.FNA.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
