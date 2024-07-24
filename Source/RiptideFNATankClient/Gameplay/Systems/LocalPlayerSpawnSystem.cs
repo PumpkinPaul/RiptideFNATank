@@ -3,18 +3,17 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
+using RiptideFNATankClient.Gameplay.Components;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct LocalPlayerSpawnMessage(
     PlayerIndex PlayerIndex,
     Keys MoveUpKey,
     Keys MoveDownKey,
     Vector2 Position,
-    Color Color,
-    int BounceDirection
+    Color Color
 );
 
 /// <summary>
@@ -37,7 +36,6 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
             Set(entity, new ScaleComponent(new Vector2(16, 64)));
             Set(entity, new ColorComponent(message.Color));
             Set(entity, new VelocityComponent());
-            Set(entity, new CausesBounceComponent(message.BounceDirection));
         }
     }
 }

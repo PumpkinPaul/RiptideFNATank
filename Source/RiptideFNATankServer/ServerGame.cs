@@ -15,8 +15,10 @@ namespace RiptideFNATankServer;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Riptide;
 using RiptideFNATankCommon;
 using RiptideFNATankServer.Networking;
+using Wombat.Engine;
 
 /// <summary>
 /// Very simple multiplayer implementation of the server for the game, Tank using the Riptide framework, MoonTools.ECS and Quake3 style client / server multiplayer
@@ -31,6 +33,15 @@ public class ServerGame : Game
     //------------------------------------------------------------------------------------------------------------------------------------------------------ 
     //Multiplayer
     readonly NetworkGameManager _networkGameManager;
+
+    const int PLAYER_OFFSET_X = 32;
+
+    readonly Vector2[] _playerSpawnPoints = [
+        new Vector2(PLAYER_OFFSET_X, BaseGame.SCREEN_HEIGHT / 2),
+        new Vector2(BaseGame.SCREEN_WIDTH - PLAYER_OFFSET_X, BaseGame.SCREEN_HEIGHT / 2)
+    ];
+
+    int _playerSpawnPointsIdx = 0;
 
     public ServerGame()
     {
@@ -47,6 +58,8 @@ public class ServerGame : Game
         _networkGameManager = new(
             port: 17871,
             maxClientCount: 4);
+
+        _networkGameManager.ClientConnected += ClientConnectedHandler;
     }
 
     protected override void Initialize()
@@ -69,5 +82,28 @@ public class ServerGame : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.Red);
+    }
+
+    private void ClientConnectedHandler(NetworkGameManager.ClientConnectedArgs e)
+    {
+        var name = e.Message.GetString();
+
+#if DEBUG
+        Logger.Info($"Message handler: {nameof(ClientConnectedHandler)} from client: {e.ClientId}");
+        Logger.Debug("Read the following...");
+        Logger.Debug($"{name}");
+#endif
+
+        //TODO: probably need some logic here to do map stuff, get spawn points, etc
+        var position = _playerSpawnPoints[_playerSpawnPointsIdx];
+        _networkGameManager.SpawnPlayer(e.ClientId, name, position);
+
+        PrepareNextPlayer();
+    }
+
+    void PrepareNextPlayer()
+    {
+        //Cycle through the spawn points so that players are located in the correct postions
+        _playerSpawnPointsIdx = (_playerSpawnPointsIdx + 1) % _playerSpawnPoints.Length;
     }
 }

@@ -1,8 +1,11 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-using RiptideFNATank.Gameplay;
 
-namespace RiptideFNATank.RiptideMultiplayer;
+// Copyright Pumpkin Games Ltd. All Rights Reserved.
+
+using RiptideFNATankClient.Gameplay;
+
+namespace RiptideFNATankClient.Networking;
 
 public class MultiplayerGameState : GameState
 {

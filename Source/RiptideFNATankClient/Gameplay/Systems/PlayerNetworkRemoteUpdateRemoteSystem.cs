@@ -1,11 +1,11 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
-using RiptideFNATank.RiptideMultiplayer;
+using RiptideFNATankClient.Gameplay.Components;
+using RiptideFNATankClient.Networking;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Applies smoothing by interpolating the display state somewhere

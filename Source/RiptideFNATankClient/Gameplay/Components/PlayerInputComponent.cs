@@ -3,7 +3,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace RiptideFNATank.Gameplay.Components;
+namespace RiptideFNATankClient.Gameplay.Components;
 
 public readonly record struct PlayerInputComponent(
     PlayerIndex PlayerIndex,

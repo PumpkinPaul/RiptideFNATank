@@ -2,7 +2,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace RiptideFNATank.Gameplay.GamePhases;
+namespace RiptideFNATankClient.Gameplay.GamePhases;
 
 /// <summary>
 /// Base class for all the different game phases (e.g. main menu, playing the game, game over, etc).

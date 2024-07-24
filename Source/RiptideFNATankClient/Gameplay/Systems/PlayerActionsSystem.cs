@@ -2,10 +2,10 @@
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
+using RiptideFNATankClient.Gameplay.Components;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Handles player actions (initiate a jump, fire a weapon, move a paddle)
@@ -29,7 +29,7 @@ public sealed class PlayerActionsSystem : MoonTools.ECS.System
         {
             ref readonly var gameInput = ref Get<PlayerActionsComponent>(entity);
 
-            var moveUpSpeed   = gameInput.MoveUp   ?  PADDLE_SPEED : 0;
+            var moveUpSpeed = gameInput.MoveUp ? PADDLE_SPEED : 0;
             var moveDownSpeed = gameInput.MoveDown ? -PADDLE_SPEED : 0;
 
             Set(entity, new VelocityComponent(

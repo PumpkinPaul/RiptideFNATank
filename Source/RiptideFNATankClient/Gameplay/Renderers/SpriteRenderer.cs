@@ -4,9 +4,9 @@ using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
-using RiptideFNATank.Gameplay.Components;
+using RiptideFNATankClient.Gameplay.Components;
 
-namespace RiptideFNATank.Gameplay.Renderers;
+namespace RiptideFNATankClient.Gameplay.Renderers;
 
 public class SpriteRenderer : Renderer
 {

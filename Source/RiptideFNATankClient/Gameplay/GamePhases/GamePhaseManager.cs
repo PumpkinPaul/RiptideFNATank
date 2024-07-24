@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Wombat.Engine.Collections;
 using System;
 
-namespace RiptideFNATank.Gameplay.GamePhases;
+namespace RiptideFNATankClient.Gameplay.GamePhases;
 
 /// <summary>
 /// Manages the game's distinct phases - Splash, Intro, MainMenu, Play, etc.

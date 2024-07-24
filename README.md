@@ -29,6 +29,8 @@ Implemented using a client / server approach based on the [Quake-III-Arena](http
 
 > Quake III Arena is a 1999 multiplayer-focused first-person shooter developed by id Software
 
+* [Quake 3 Source Code Review: Network Model](https://fabiensanglard.net/quake3/network.php) _by Fabien Sanglard_
+
 ## Getting Started
 
 Clone the source code and build the app - all dependencies should be included in the project.

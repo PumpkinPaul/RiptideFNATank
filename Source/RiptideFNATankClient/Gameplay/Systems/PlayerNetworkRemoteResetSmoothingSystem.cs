@@ -1,11 +1,11 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
-using RiptideFNATank.RiptideMultiplayer;
+using RiptideFNATankClient.Gameplay.Components;
+using RiptideFNATankClient.Networking;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Reads remote match data received messages and applies prediction to the 'simulation state' - e.g. the normal component data

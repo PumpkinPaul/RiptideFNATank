@@ -1,6 +1,6 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-namespace RiptideFNATank.Gameplay.Components;
+namespace RiptideFNATankClient.Gameplay.Components;
 
 public record struct PreviousStateComponent
 {

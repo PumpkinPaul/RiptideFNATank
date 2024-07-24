@@ -3,11 +3,10 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
-using RiptideFNATank.RiptideMultiplayer;
+using RiptideFNATankClient.Gameplay.Components;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct PlayerSpawnMessage(
     PlayerIndex PlayerIndex,
@@ -22,7 +21,7 @@ public readonly record struct PlayerSpawnMessage(
 /// Responsible for spawning Player entities with the correct components.
 /// </summary>
 public class PlayerSpawnSystem : MoonTools.ECS.System
-{    
+{
     public PlayerSpawnSystem(World world) : base(world)
     {
     }

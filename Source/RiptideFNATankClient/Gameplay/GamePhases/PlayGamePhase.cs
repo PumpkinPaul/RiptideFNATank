@@ -13,11 +13,11 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Wombat.Engine;
-using RiptideFNATank.RiptideMultiplayer;
 using RiptideFNATankCommon;
 using System;
+using RiptideFNATankClient.Networking;
 
-namespace RiptideFNATank.Gameplay.GamePhases;
+namespace RiptideFNATankClient.Gameplay.GamePhases;
 
 /// <summary>
 /// Playing the game phase
@@ -42,17 +42,11 @@ public class PlayGamePhase : GamePhase
     //------------------------------------------------------------------------------------------------------------------------------------------------------ 
     //------------------------------------------------------------------------------------------------------------------------------------------------------ 
     //Gameplay
-    public event EventHandler ExitedMatch;
-
-    const int PLAYER_OFFSET_X = 32;
-
-    readonly Vector2[] _playerSpawnPoints = new[] {
-        new Vector2(PLAYER_OFFSET_X, BaseGame.SCREEN_HEIGHT / 2),
-        new Vector2(BaseGame.SCREEN_WIDTH - PLAYER_OFFSET_X, BaseGame.SCREEN_HEIGHT / 2)
-    };
+    public event Action ExitedMatch;
 
     public PlayGamePhase(
-        NetworkGameManager networkGameManager)
+        NetworkGameManager networkGameManager
+    )
     {
         _networkGameManager = networkGameManager;
     }
@@ -64,6 +58,21 @@ public class PlayGamePhase : GamePhase
         _gameState = new MultiplayerGameState();
 
         _ecsManager = new ECSManager(_networkGameManager, _playerEntityMapper, _gameState);
+
+        _networkGameManager.SpawnedLocalPlayer += SpawnedLocalPlayer;
+        _networkGameManager.SpawnedRemotePlayer += SpawnedRemotePlayer;
+    }
+
+    void SpawnedLocalPlayer(SpawnedPlayerEventArgs e)
+    {
+        _ecsManager.SpawnLocalPlayer(e.Position);
+    }
+
+    void SpawnedRemotePlayer(SpawnedPlayerEventArgs e)
+    {
+        _ecsManager.SpawnRemotePlayer(e.Position);
+
+        _playerEntityMapper.AddPlayer(PlayerIndex.Two, e.ClientId);
     }
 
     protected override void OnUpdate(GameTime gameTime)
@@ -100,6 +109,6 @@ public class PlayGamePhase : GamePhase
 
         _networkGameManager.QuitMatch();
 
-        ExitedMatch?.Invoke(this, EventArgs.Empty);
+        ExitedMatch?.Invoke();
     }
 }

@@ -2,7 +2,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace RiptideFNATank.Gameplay.Components;
+namespace RiptideFNATankClient.Gameplay.Components;
 
 public record struct LerpPositionComponent
 {

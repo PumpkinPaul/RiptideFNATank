@@ -1,6 +1,6 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-namespace RiptideFNATank.RiptideMultiplayer;
+namespace RiptideFNATankClient.Networking;
 
 public class NetworkOptions
 {

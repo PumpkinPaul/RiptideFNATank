@@ -11,20 +11,20 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 */
 
 using Microsoft.Xna.Framework;
-using Riptide.Utils;
 using Riptide;
-using Wombat.Engine.IO;
-using RiptideFNATank.Gameplay.Players;
+using Riptide.Utils;
+using RiptideFNATankClient.Gameplay.Players;
 using RiptideFNATankCommon;
+using RiptideFNATankCommon.Extensions;
+using RiptideFNATankCommon.Networking;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using RiptideFNATankCommon.Networking;
 
-namespace RiptideFNATank.RiptideMultiplayer;
+namespace RiptideFNATankClient.Networking;
 
 public record SpawnedPlayerEventArgs(
-    ushort ClientId
+    ushort ClientId,
+    Vector2 Position
 );
 
 public record ReceivedRemotePaddleStateEventArgs(
@@ -57,6 +57,7 @@ public class NetworkGameManager
 {
     static NetworkGameManager Instance;
 
+    public event Action LocalClientConnected;
     public event Action ConnectionFailed;
     public event Action Disconnected;
 
@@ -90,22 +91,23 @@ public class NetworkGameManager
     public void Start()
     {
         Client = new Client();
-        Client.Connected += LocalClientConnected;
-        Client.Disconnected += LocalClientDisconnected;
-        Client.ConnectionFailed += LocalClientConnectionFailed;
+        Client.Connected += LocalClientConnectedHandler;
+        Client.Disconnected += LocalClientDisconnectedHandler;
+        Client.ConnectionFailed += LocalClientConnectionFailedHandler;
     }
 
-    void LocalClientConnected(object sender, EventArgs e)
+    void LocalClientConnectedHandler(object sender, EventArgs e)
     {
         SendPlayerName();
+        LocalClientConnected?.Invoke();
     }
 
-    void LocalClientConnectionFailed(object sender, EventArgs e)
+    void LocalClientConnectionFailedHandler(object sender, EventArgs e)
     {
         ConnectionFailed?.Invoke();
     }
 
-    void LocalClientDisconnected(object sender, EventArgs e)
+    void LocalClientDisconnectedHandler(object sender, EventArgs e)
     {
         Disconnected?.Invoke();
     }
@@ -132,13 +134,14 @@ public class NetworkGameManager
     {
         var clientId = message.GetUShort();
         var name = message.GetString();
+        var position = message.GetVector2();
 
 #if DEBUG
         Logger.Info($"Message handler: {nameof(ReceivedSpawnPlayer)} from client: {clientId}");
         Logger.Debug("Read the following...");
         Logger.Debug($"{name}");
 #endif
-        Instance.SpawnPlayer(clientId, name);
+        Instance.SpawnPlayer(clientId, name, position);
     }
 
     #endregion
@@ -172,12 +175,13 @@ public class NetworkGameManager
         _players.Clear();
     }
 
-    void SpawnPlayer(ushort clientId, string name)
+    void SpawnPlayer(ushort clientId, string name, Vector2 position)
     {
 #if DEBUG
         Logger.Info($"{nameof(SpawnPlayer)}");
         Logger.Debug($"{clientId}");
         Logger.Debug($"{name}");
+        Logger.Debug($"{position}");
 #endif
 
         // If the player has already been spawned, return early.
@@ -192,13 +196,12 @@ public class NetworkGameManager
         Player player;
 
         // Setup the appropriate network data values if this is a remote player.
-        // If this is our local player, add a listener for the PlayerDied event.
         if (isLocal)
         {
             player = new LocalPlayer();
             _localPlayer = player;
 
-            SpawnedLocalPlayer?.Invoke(new SpawnedPlayerEventArgs(clientId));
+            SpawnedLocalPlayer?.Invoke(new SpawnedPlayerEventArgs(clientId, position));
         }
         else
         {
@@ -210,7 +213,7 @@ public class NetworkGameManager
                 }
             };
 
-            SpawnedRemotePlayer?.Invoke(new SpawnedPlayerEventArgs(clientId));
+            SpawnedRemotePlayer?.Invoke(new SpawnedPlayerEventArgs(clientId, position));
         }
 
         // Add the player to the players array.

@@ -2,7 +2,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace RiptideFNATank.Gameplay.Components;
+namespace RiptideFNATankClient.Gameplay.Components;
 
 public readonly record struct PositionComponent(
     Vector2 Value

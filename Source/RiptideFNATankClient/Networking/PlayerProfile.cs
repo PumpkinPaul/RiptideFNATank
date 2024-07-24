@@ -5,7 +5,7 @@ using Wombat.Engine.IO;
 using System;
 using System.IO;
 
-namespace RiptideFNATank.RiptideMultiplayer;
+namespace RiptideFNATankClient.Networking;
 
 /// <summary>
 /// Basic info about a player.
@@ -16,7 +16,7 @@ namespace RiptideFNATank.RiptideMultiplayer;
 public class PlayerProfile
 {
     public string DeviceIdentifier { get; set; }
-    
+
     public string SessionToken { get; set; }
 
     [JsonRequired]
@@ -36,7 +36,7 @@ public class PlayerProfile
                 return JsonConvert.DeserializeObject<PlayerProfile>(json);
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine(ex);
         }

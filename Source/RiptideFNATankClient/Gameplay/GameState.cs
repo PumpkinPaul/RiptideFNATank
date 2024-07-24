@@ -1,4 +1,4 @@
-namespace RiptideFNATank.Gameplay;
+namespace RiptideFNATankClient.Gameplay;
 
 public class GameState
 {

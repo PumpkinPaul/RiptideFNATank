@@ -3,10 +3,10 @@
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using Wombat.Engine;
-using RiptideFNATank.Gameplay.Components;
 using System;
+using RiptideFNATankClient.Gameplay.Components;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Responsible for performing entity to world collision calculations.

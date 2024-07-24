@@ -2,7 +2,7 @@
 
 using Wombat.Engine;
 
-namespace RiptideFNATank.Gameplay.Components;
+namespace RiptideFNATankClient.Gameplay.Components;
 
 public readonly record struct BounceResponseComponent(
     CollisionEdge CollisionEdge

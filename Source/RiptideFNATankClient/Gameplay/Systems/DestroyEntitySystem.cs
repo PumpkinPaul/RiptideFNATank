@@ -3,7 +3,7 @@
 using MoonTools.ECS;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct DestroyEntityMessage(
     Entity Entity

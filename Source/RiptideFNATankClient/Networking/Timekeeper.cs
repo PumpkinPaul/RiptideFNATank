@@ -2,7 +2,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace RiptideFNATank.RiptideMultiplayer;
+namespace RiptideFNATankClient.Networking;
 
 public class Timekeeper
 {

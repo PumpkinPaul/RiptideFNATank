@@ -2,9 +2,9 @@
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
+using RiptideFNATankClient.Gameplay.Components;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Reads remote match data received messages and applies the new values to the 'simulation state' - e.g. the normal component data
@@ -21,11 +21,11 @@ public abstract class UpdatePaddleStateSystem : MoonTools.ECS.System
     {
         ref readonly var position = ref Get<PositionComponent>(entity);
 
-        var moveUpSpeed   = paddleState.MoveUp   ?  PlayerActionsSystem.PADDLE_SPEED : 0;
+        var moveUpSpeed = paddleState.MoveUp ? PlayerActionsSystem.PADDLE_SPEED : 0;
         var moveDownSpeed = paddleState.MoveDown ? -PlayerActionsSystem.PADDLE_SPEED : 0;
 
         paddleState.Velocity = new Vector2(0, moveUpSpeed + moveDownSpeed);
-        
+
         paddleState.Position += paddleState.Velocity;
         //paddleState.Velocity *= PlayerActionsSystem.PADDLE_FRICTION;
     }

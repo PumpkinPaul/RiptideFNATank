@@ -10,9 +10,26 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankClient.Gameplay.Players;
+using Microsoft.Xna.Framework;
+using Riptide;
 
-public class LocalPlayer : Player
+namespace RiptideFNATankCommon.Extensions;
+
+/// <summary>
+/// Extension methods for the Riptide Message class.
+/// </summary>
+public static class RiptideMessageExtensions
 {
+    public static void AddVector2(this Message message, Vector2 value)
+    {
+        message.AddFloat(value.X);
+        message.AddFloat(value.Y);
+    }
 
+    public static Vector2 GetVector2(this Message message)
+    {
+        return new Vector2(
+            message.GetFloat(),
+            message.GetFloat());
+    }
 }

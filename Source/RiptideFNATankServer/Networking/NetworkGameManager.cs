@@ -10,9 +10,11 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Xna.Framework;
 using Riptide;
 using Riptide.Utils;
 using RiptideFNATankCommon;
+using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
 
 namespace RiptideFNATankServer.Networking;
@@ -23,6 +25,12 @@ namespace RiptideFNATankServer.Networking;
 public class NetworkGameManager
 {
     static NetworkGameManager Instance;
+
+    public readonly record struct ClientConnectedArgs(
+        ushort ClientId,
+        Message Message);
+
+    public event Action<ClientConnectedArgs> ClientConnected;
 
     public Server Server { get; private set; }
 
@@ -66,11 +74,11 @@ public class NetworkGameManager
         Server.Stop();
     }
 
-    void SpawnPlayer(ushort clientId, string name)
+    public void SpawnPlayer(ushort clientId, string name, Vector2 position)
     {
         _players[clientId] = new Player(clientId, name);
 
-        SendSpawnPlayer(clientId, name);
+        SendSpawnPlayer(clientId, name, position);
     }
 
     #region Handle client messages 
@@ -78,25 +86,19 @@ public class NetworkGameManager
     [MessageHandler((ushort)ClientMessageType.Name)]
     static void ReceivedName(ushort clientId, Message message)
     {
-        var name = message.GetString();
-
-#if DEBUG
-        Logger.Info($"Message handler: {nameof(ReceivedName)} from client: {clientId}");
-        Logger.Debug("Read the following...");
-        Logger.Debug($"{name}");
-#endif
-        Instance.SpawnPlayer(clientId, name);
+        Instance.ClientConnected?.Invoke(new ClientConnectedArgs(clientId, message));
     }
 
     #endregion
 
     #region Send server messages 
 
-    void SendSpawnPlayer(ushort clientId, string name)
+    void SendSpawnPlayer(ushort clientId, string name, Vector2 position)
     {
         var message = Message.Create(MessageSendMode.Reliable, ServerMessageType.SpawnPlayer);
         message.AddUShort(clientId);
         message.AddString(name);
+        message.AddVector2(position);
 
         Server.SendToAll(message);
     }

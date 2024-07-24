@@ -2,12 +2,11 @@
 
 using MoonTools.ECS;
 using Wombat.Engine.IO;
-using RiptideFNATank.Gameplay.Players;
-using RiptideFNATank.RiptideMultiplayer;
 using System;
 using System.IO;
+using RiptideFNATankClient.Networking;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct GoalScoredMessage(
     int Player1Increment,

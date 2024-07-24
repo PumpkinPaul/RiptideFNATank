@@ -2,10 +2,10 @@
 
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
+using RiptideFNATankClient.Gameplay.Components;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Responsible for checking input devices, converting button presses, etc into game actions.
@@ -37,7 +37,7 @@ public sealed class PlayerInputSystem : MoonTools.ECS.System
 
             Set(entity, new PlayerActionsComponent(
                 moveUp,
-                moveDown));            
+                moveDown));
         }
     }
 }

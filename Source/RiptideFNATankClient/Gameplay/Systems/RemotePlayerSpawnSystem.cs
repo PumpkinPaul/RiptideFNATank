@@ -2,17 +2,16 @@
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
-using RiptideFNATank.RiptideMultiplayer;
+using RiptideFNATankClient.Gameplay.Components;
+using RiptideFNATankClient.Networking;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct RemotePlayerSpawnMessage(
     PlayerIndex PlayerIndex,
     Vector2 Position,
-    Color Color,
-    int BounceDirection
+    Color Color
 );
 
 /// <summary>
@@ -42,7 +41,6 @@ public class RemotePlayerSpawnSystem : MoonTools.ECS.System
             Set(entity, new ScaleComponent(new Vector2(16, 64)));
             Set(entity, new ColorComponent(message.Color));
             Set(entity, new VelocityComponent());
-            Set(entity, new CausesBounceComponent(message.BounceDirection));
 
             var paddleState = new PaddleState
             {

@@ -14,9 +14,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
-using RiptideFNATank.RiptideMultiplayer;
+using RiptideFNATankClient.Networking;
 
-namespace RiptideFNATank.Gameplay.GamePhases;
+namespace RiptideFNATankClient.Gameplay.GamePhases;
 
 /// <summary>
 /// Main Menu Processing

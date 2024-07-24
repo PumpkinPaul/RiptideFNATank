@@ -14,10 +14,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Wombat.Engine;
-using RiptideFNATank.Gameplay.GamePhases;
-using RiptideFNATank.RiptideMultiplayer;
 using RiptideFNATankCommon;
 using System;
+using RiptideFNATankClient.Gameplay.GamePhases;
+using RiptideFNATankClient.Networking;
 
 namespace RiptideFNATankClient;
 
@@ -50,13 +50,14 @@ public class ClientGame : BaseGame
         _playerProfile = PlayerProfile.LoadOrCreate(LocalApplicationDataPath);
 
         _networkGameManager = new NetworkGameManager("127.0.0.1", 17871);
+        _networkGameManager.LocalClientConnected += () => GamePhaseManager.ChangePhase<PlayGamePhase>();
 
         GamePhaseManager = new GamePhaseManager();
         GamePhaseManager.Add(new MainMenuPhase(_networkGameManager));
         GamePhaseManager.Add(new PlayGamePhase(_networkGameManager));
 
         // Show the main menu, hide the in-game menu when player quits the match
-        GamePhaseManager.Get<PlayGamePhase>().ExitedMatch += (sender, e) => GamePhaseManager.ChangePhase<MainMenuPhase>();
+        GamePhaseManager.Get<PlayGamePhase>().ExitedMatch += () => GamePhaseManager.ChangePhase<MainMenuPhase>();
     }
 
     protected override void Initialize()

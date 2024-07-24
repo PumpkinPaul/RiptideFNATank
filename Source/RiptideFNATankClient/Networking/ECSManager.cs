@@ -5,11 +5,11 @@ using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
-using RiptideFNATank.Gameplay.Renderers;
-using RiptideFNATank.Gameplay.Systems;
 using System.Collections.Generic;
+using RiptideFNATankClient.Gameplay.Renderers;
+using RiptideFNATankClient.Gameplay.Systems;
 
-namespace RiptideFNATank.RiptideMultiplayer;
+namespace RiptideFNATankClient.Networking;
 
 /// <summary>
 /// Encapsulates management of the ECS
@@ -97,7 +97,7 @@ public class ECSManager
             new PlayerNetworkRemoteUpdateSmoothingSystem(_world),
             new PlayerNetworkRemoteUpdateRemoteSystem(_world, _networkOptions),
             new PlayerNetworkRemoteApplySmoothingSystem(_world, _networkOptions),
-            
+
             new BallNetworkRemoteSyncSystem(_world),
             new LerpPositionSystem(_world),
 
@@ -125,7 +125,7 @@ public class ECSManager
         ));
     }
 
-    public void SpawnLocalPlayer(Vector2 position, int bounceDirection)
+    public void SpawnLocalPlayer(Vector2 position)
     {
         //Queue entity creation in the ECS
         _localPlayerSpawnMessages.Enqueue(new LocalPlayerSpawnMessage(
@@ -133,25 +133,23 @@ public class ECSManager
             MoveUpKey: Keys.Q,
             MoveDownKey: Keys.A,
             Position: position,
-            Color.Cyan,
-            BounceDirection: bounceDirection
+            Color.Red
         ));
     }
 
-    public void SpawnRemotePlayer(Vector2 position, int bounceDirection)
+    public void SpawnRemotePlayer(Vector2 position)
     {
         //Queue entity creation in the ECS
         _remotePlayerSpawnMessages.Enqueue(new RemotePlayerSpawnMessage(
             PlayerIndex: PlayerIndex.Two,
             Position: position,
-            Color.Cyan * 0.25f,
-            BounceDirection: bounceDirection
+            Color.Blue
         ));
     }
 
-    public void ReceivedRemotePaddleState(ReceivedRemotePaddleStateEventArgs e, string sessionId)
+    public void ReceivedRemotePaddleState(ReceivedRemotePaddleStateEventArgs e, ushort clientId)
     {
-        var entity = _playerEntityMapper.GetEntityFromSessionId(sessionId);
+        var entity = _playerEntityMapper.GetEntityFromClientId(clientId);
 
         if (entity == PlayerEntityMapper.INVALID_ENTITY)
             return;
@@ -175,14 +173,14 @@ public class ECSManager
         ));
     }
 
-    public void DestroyEntity(string sessionId)
+    public void DestroyEntity(ushort clientId)
     {
-        var entity = _playerEntityMapper.GetEntityFromSessionId(sessionId);
+        var entity = _playerEntityMapper.GetEntityFromClientId(clientId);
 
         if (entity == PlayerEntityMapper.INVALID_ENTITY)
             return;
 
-        _playerEntityMapper.RemovePlayerBySessionId(sessionId);
+        _playerEntityMapper.RemovePlayerByClientId(clientId);
 
         //Queue entity to begin lerping to the corrected position.
         _destroyEntityMessage.Enqueue(new DestroyEntityMessage(
@@ -246,7 +244,7 @@ public class ECSManager
         spriteBatch.DrawText(Resources.GameFont, _gameState.Player2Score.ToString(), new Vector2(BaseGame.SCREEN_WIDTH * 0.75f, BaseGame.SCREEN_HEIGHT - 48), Color.Cyan, Alignment.Centre);
 
         //...help text
-        spriteBatch.DrawText(Resources.SmallFont, "Z Smoothing",  new Vector2(BaseGame.SCREEN_WIDTH * 0.25f, BaseGame.SCREEN_HEIGHT - 92), _networkOptions.EnableSmoothing  ? Color.Cyan : Color.Gray, Alignment.Centre);
+        spriteBatch.DrawText(Resources.SmallFont, "Z Smoothing", new Vector2(BaseGame.SCREEN_WIDTH * 0.25f, BaseGame.SCREEN_HEIGHT - 92), _networkOptions.EnableSmoothing ? Color.Cyan : Color.Gray, Alignment.Centre);
         spriteBatch.DrawText(Resources.SmallFont, "X Prediction", new Vector2(BaseGame.SCREEN_WIDTH * 0.75f, BaseGame.SCREEN_HEIGHT - 92), _networkOptions.EnablePrediction ? Color.Cyan : Color.Gray, Alignment.Centre);
         spriteBatch.End();
     }

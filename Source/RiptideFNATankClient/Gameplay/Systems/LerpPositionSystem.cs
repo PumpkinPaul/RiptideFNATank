@@ -2,10 +2,10 @@
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
+using RiptideFNATankClient.Gameplay.Components;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Interpolates a network entity's position from a source to a target postion over a series of updates

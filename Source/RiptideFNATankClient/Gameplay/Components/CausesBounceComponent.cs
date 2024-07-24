@@ -1,6 +1,6 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-namespace RiptideFNATank.Gameplay.Components;
+namespace RiptideFNATankClient.Gameplay.Components;
 
 public readonly record struct CausesBounceComponent(
     //A 'mask' that will determince if an entity can cause bouncing

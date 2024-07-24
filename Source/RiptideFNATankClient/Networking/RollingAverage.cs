@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 using Wombat.Engine;
 using Wombat.Engine.DebugTools;
 
-namespace RiptideFNATank.RiptideMultiplayer;
+namespace RiptideFNATankClient.Networking;
 
 /// <summary>
 /// To compensate for network latency, we need to know exactly how late each

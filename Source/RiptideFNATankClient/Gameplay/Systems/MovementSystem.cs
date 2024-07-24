@@ -1,10 +1,10 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
+using RiptideFNATankClient.Gameplay.Components;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Responsible for moving entities by updating their positions from their velocity.

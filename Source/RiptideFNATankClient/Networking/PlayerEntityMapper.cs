@@ -1,10 +1,20 @@
-// Copyright Pumpkin Games Ltd. All Rights Reserved.
+/*
+__________.__        __  .__    .___       __________________      _____    ___________              __    
+\______   \__|______/  |_|__| __| _/____   \_   _____/\      \    /  _  \   \__    ___/____    ____ |  | __
+ |       _/  \____ \   __\  |/ __ |/ __ \   |    __)  /   |   \  /  /_\  \    |    |  \__  \  /    \|  |/ /
+ |    |   \  |  |_> >  | |  / /_/ \  ___/   |     \  /    |    \/    |    \   |    |   / __ \|   |  \    < 
+ |____|_  /__|   __/|__| |__\____ |\___  >  \___  /  \____|__  /\____|__  /   |____|  (____  /___|  /__|_ \
+        \/   |__|                \/    \/       \/           \/         \/                 \/     \/     \/                                                                                  
+                                                              
+Copyright Pumpkin Games Ltd. All Rights Reserved.
+
+*/
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using System.Collections.Generic;
 
-namespace RiptideFNATank.RiptideMultiplayer;
+namespace RiptideFNATankClient.Networking;
 
 /// <summary>
 /// Maps local and network players to the entities in the ECS.
@@ -13,37 +23,37 @@ public class PlayerEntityMapper
 {
     public const int INVALID_ENTITY = -1;
 
-    readonly Dictionary<PlayerIndex, string> _playerIndexToSessionId = new();
-    readonly Dictionary<PlayerIndex, Entity> _playerIndexToEntity = new();
-    readonly Dictionary<string, Entity> _sessionIdToEntity = new();
-    readonly Dictionary<string, PlayerIndex> _sessionIdToPlayerIndex = new();
+    readonly Dictionary<PlayerIndex, ushort> _playerIndexToClientId = [];
+    readonly Dictionary<PlayerIndex, Entity> _playerIndexToEntity = [];
+    readonly Dictionary<ushort, Entity> _clientIdToEntity = [];
+    readonly Dictionary<ushort, PlayerIndex> _clientToPlayerIndex = [];
 
-    public void AddPlayer(PlayerIndex playerIndex, string sessionId)
+    public void AddPlayer(PlayerIndex playerIndex, ushort clientId)
     {
-        _playerIndexToSessionId[playerIndex] = sessionId;
-        _sessionIdToPlayerIndex[sessionId] = playerIndex;
+        _playerIndexToClientId[playerIndex] = clientId;
+        _clientToPlayerIndex[clientId] = playerIndex;
     }
 
     public void MapEntity(PlayerIndex playerIndex, Entity entity)
     {
         _playerIndexToEntity[playerIndex] = entity;
 
-        var sessionId = _playerIndexToSessionId[playerIndex];
-        _sessionIdToEntity[sessionId] = entity;
+        var sessionId = _playerIndexToClientId[playerIndex];
+        _clientIdToEntity[sessionId] = entity;
     }
 
-    public void RemovePlayerBySessionId(string sessionId)
+    public void RemovePlayerByClientId(ushort clientId)
     {
-        var playerIndex = _sessionIdToPlayerIndex[sessionId];
+        var playerIndex = _clientToPlayerIndex[clientId];
 
-        _sessionIdToEntity.Remove(sessionId);
-        _sessionIdToPlayerIndex.Remove(sessionId);
-        _playerIndexToSessionId.Remove(playerIndex);
+        _clientIdToEntity.Remove(clientId);
+        _clientToPlayerIndex.Remove(clientId);
+        _playerIndexToClientId.Remove(playerIndex);
         _playerIndexToEntity.Remove(playerIndex);
     }
 
-    public Entity GetEntityFromSessionId(string sessionId)
+    public Entity GetEntityFromClientId(ushort clientId)
     {
-        return _sessionIdToEntity.TryGetValue(sessionId, out var entity) ? entity : INVALID_ENTITY;
+        return _clientIdToEntity.TryGetValue(clientId, out var entity) ? entity : INVALID_ENTITY;
     }
 }

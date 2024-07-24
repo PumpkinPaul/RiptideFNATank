@@ -1,6 +1,6 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-namespace RiptideFNATank.Gameplay.Players;
+namespace RiptideFNATankClient.Gameplay.Players;
 
 public class Player
 {

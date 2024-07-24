@@ -2,7 +2,7 @@
 
 using MoonTools.ECS;
 
-namespace RiptideFNATank.Gameplay.Components;
+namespace RiptideFNATankClient.Gameplay.Components;
 
 public readonly record struct AngledBounceResponseComponent(
     Entity BouncedBy

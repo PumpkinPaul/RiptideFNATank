@@ -2,10 +2,10 @@
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATank.Gameplay.Components;
+using RiptideFNATankClient.Gameplay.Components;
 using System;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct ScoreSpawnMessage(
     PlayerIndex PlayerIndex,

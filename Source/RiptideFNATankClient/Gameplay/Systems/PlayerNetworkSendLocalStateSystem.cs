@@ -1,14 +1,13 @@
 // Copyright Pumpkin Games Ltd. All Rights Reserved.
 
-using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using Wombat.Engine.IO;
-using RiptideFNATank.Gameplay.Components;
-using RiptideFNATank.RiptideMultiplayer;
 using System;
 using System.IO;
+using RiptideFNATankClient.Gameplay.Components;
+using RiptideFNATankClient.Networking;
 
-namespace RiptideFNATank.Gameplay.Systems;
+namespace RiptideFNATankClient.Gameplay.Systems;
 
 /// <summary>
 /// Syncs the local player's state across the network by sending frequent network packets containing relevent 
