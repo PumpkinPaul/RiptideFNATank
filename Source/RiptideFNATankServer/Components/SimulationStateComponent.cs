@@ -10,21 +10,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Networking;
+namespace RiptideFNATankServer.Gameplay.Components;
 
-/// <summary>
-/// All the different types of command the client can send to the server
-/// </summary>
-public enum ClientMessageType : ushort
+public record struct SimulationStateComponent
 {
-    Name = 1,
-    State
-}
-
-/// <summary>
-/// All the different types of commands the server can send to the cliebnt
-/// </summary>
-public enum ServerMessageType : ushort
-{
-    SpawnPlayer = 1
+    public PaddleState PaddleState;
 }

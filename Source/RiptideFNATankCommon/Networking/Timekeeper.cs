@@ -2,7 +2,7 @@
 
 using Microsoft.Xna.Framework;
 
-namespace RiptideFNATankClient.Networking;
+namespace RiptideFNATankCommon.Networking;
 
 public class Timekeeper
 {

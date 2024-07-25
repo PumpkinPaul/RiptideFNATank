@@ -20,17 +20,23 @@ using RiptideFNATankCommon.Networking;
 namespace RiptideFNATankServer.Networking;
 
 /// <summary>
-/// Responsible for managing a networked game.
+/// Responsible for managing a networked game on the server.
 /// </summary>
-public class NetworkGameManager
+public class ServerNetworkManager
 {
-    static NetworkGameManager Instance;
+    static ServerNetworkManager Instance;
 
     public readonly record struct ClientConnectedArgs(
         ushort ClientId,
         Message Message);
 
     public event Action<ClientConnectedArgs> ClientConnected;
+
+    public readonly record struct ClientStateArgs(
+        ushort ClientId,
+        Message Message);
+
+    public event Action<ClientStateArgs> ReceivedClientState;
 
     public Server Server { get; private set; }
 
@@ -39,7 +45,7 @@ public class NetworkGameManager
 
     readonly Dictionary<ushort, Player> _players = [];
 
-    public NetworkGameManager(
+    public ServerNetworkManager(
         ushort port,
         ushort maxClientCount)
     {
@@ -84,9 +90,15 @@ public class NetworkGameManager
     #region Handle client messages 
 
     [MessageHandler((ushort)ClientMessageType.Name)]
-    static void ReceivedName(ushort clientId, Message message)
+    static void ReceivedClientNameHandler(ushort clientId, Message message)
     {
         Instance.ClientConnected?.Invoke(new ClientConnectedArgs(clientId, message));
+    }
+
+    [MessageHandler((ushort)ClientMessageType.State)]
+    static void ReceivedClientStateHandler(ushort clientId, Message message)
+    {
+        Instance.ReceivedClientState?.Invoke(new ClientStateArgs(clientId, message));
     }
 
     #endregion

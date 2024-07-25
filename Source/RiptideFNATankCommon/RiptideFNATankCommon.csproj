@@ -13,6 +13,9 @@
     <Reference Include="FNA">
       <HintPath>..\..\Deploy\Dependencies\Windows\FNA.dll</HintPath>
     </Reference>
+    <Reference Include="MoonTools.ECS">
+      <HintPath>..\..\Deploy\Dependencies\Windows\MoonTools.ECS.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

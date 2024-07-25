@@ -10,21 +10,35 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Networking;
+using MoonTools.ECS;
+using RiptideFNATankServer.Gameplay.Components;
+using System;
+
+namespace RiptideFNATankServer.Gameplay.Systems;
 
 /// <summary>
-/// All the different types of command the client can send to the server
+/// Responsible for moving entities by updating their positions from their velocity.
 /// </summary>
-public enum ClientMessageType : ushort
+public sealed class MovementSystem : MoonTools.ECS.System
 {
-    Name = 1,
-    State
-}
+    readonly Filter _filter;
 
-/// <summary>
-/// All the different types of commands the server can send to the cliebnt
-/// </summary>
-public enum ServerMessageType : ushort
-{
-    SpawnPlayer = 1
+    public MovementSystem(World world) : base(world)
+    {
+        _filter = FilterBuilder
+            .Include<PositionComponent>()
+            .Include<VelocityComponent>()
+            .Build();
+    }
+
+    public override void Update(TimeSpan delta)
+    {
+        foreach (var entity in _filter.Entities)
+        {
+            ref readonly var position = ref Get<PositionComponent>(entity);
+            ref readonly var velocity = ref Get<VelocityComponent>(entity);
+
+            Set(entity, new PositionComponent(position.Value + velocity.Value));
+        }
+    }
 }

@@ -10,21 +10,15 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Networking;
+using Microsoft.Xna.Framework;
 
-/// <summary>
-/// All the different types of command the client can send to the server
-/// </summary>
-public enum ClientMessageType : ushort
-{
-    Name = 1,
-    State
-}
+namespace RiptideFNATankServer.Gameplay;
 
-/// <summary>
-/// All the different types of commands the server can send to the cliebnt
-/// </summary>
-public enum ServerMessageType : ushort
+public class GameState
 {
-    SpawnPlayer = 1
+    public Dictionary<ushort, Vector2> Positions = [];
+
+    // Other state
+    //public AllTheMissiles etc
+    public Dictionary<ushort, ushort> Scores;
 }

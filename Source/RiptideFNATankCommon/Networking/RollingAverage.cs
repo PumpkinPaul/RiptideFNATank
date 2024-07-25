@@ -6,10 +6,10 @@
 //-----------------------------------------------------------------------------
 
 using Microsoft.Xna.Framework;
-using Wombat.Engine;
-using Wombat.Engine.DebugTools;
+//using Wombat.Engine;
+//using Wombat.Engine.DebugTools;
 
-namespace RiptideFNATankClient.Networking;
+namespace RiptideFNATankCommon.Networking;
 
 /// <summary>
 /// To compensate for network latency, we need to know exactly how late each
@@ -22,7 +22,7 @@ namespace RiptideFNATankClient.Networking;
 /// packet arrives with a time difference of 70 milliseconds, we can deduce this
 /// particular packet was delivered 20 milliseconds later than usual.
 /// </summary>
-class RollingAverage
+public class RollingAverage
 {
     // Array holding the N most recent sample values.
     readonly float[] _sampleValues;
@@ -100,11 +100,11 @@ class RollingAverage
     /// </summary>
     public float AverageValue => _sampleCount == 0 ? 0 : _valueSum / _sampleCount;
 
-    public void DebugDraw()
-    {
-        var y = BaseGame.Instance.Window.ClientBounds.Height - 60;
-        var x = 480;
+    //public void DebugDraw()
+    //{
+    //    var y = BaseGame.Instance.Window.ClientBounds.Height - 60;
+    //    var x = 480;
 
-        DebugSystem.Plotter.DrawLines("Latency", _sampleValues, new Vector2(x, y), DebugSystem.MediumPlotSize, 0, FlatTheme.Carrot);
-    }
+    //    DebugSystem.Plotter.DrawLines("Latency", _sampleValues, new Vector2(x, y), DebugSystem.MediumPlotSize, 0, FlatTheme.Carrot);
+    //}
 }

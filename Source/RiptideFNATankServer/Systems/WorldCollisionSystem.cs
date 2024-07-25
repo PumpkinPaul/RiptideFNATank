@@ -2,11 +2,10 @@
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
+using RiptideFNATankServer.Gameplay.Components;
 using Wombat.Engine;
-using System;
-using RiptideFNATankClient.Gameplay.Components;
 
-namespace RiptideFNATankClient.Gameplay.Systems;
+namespace RiptideFNATankServer.Gameplay.Systems;
 
 /// <summary>
 /// Responsible for performing entity to world collision calculations.
@@ -57,9 +56,6 @@ public sealed class WorldCollisionSystem : MoonTools.ECS.System
 
             //Clamp the velocity to take the entity to the collision point...
             Set(entity, new VelocityComponent(newVelocity));
-
-            if (collisionEdge != CollisionEdge.None && Has<CanBounceComponent>(entity))
-                Set(entity, new BounceResponseComponent(collisionEdge));
         }
     }
 }

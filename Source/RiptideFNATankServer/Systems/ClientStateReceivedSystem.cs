@@ -10,21 +10,34 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Networking;
+using Microsoft.Xna.Framework;
+using MoonTools.ECS;
+using RiptideFNATankServer.Gameplay.Components;
+
+namespace RiptideFNATankServer.Gameplay.Systems;
+
+public readonly record struct ClientStateReceivedMessage(
+    Entity Entity,
+    uint SequenceId,
+    Vector2 Position
+);
 
 /// <summary>
-/// All the different types of command the client can send to the server
+/// 
 /// </summary>
-public enum ClientMessageType : ushort
+public sealed class ClientStateReceivedSystem : MoonTools.ECS.System
 {
-    Name = 1,
-    State
-}
+    public ClientStateReceivedSystem(World world) : base(world)
+    {
+    }
 
-/// <summary>
-/// All the different types of commands the server can send to the cliebnt
-/// </summary>
-public enum ServerMessageType : ushort
-{
-    SpawnPlayer = 1
+    public override void Update(TimeSpan delta)
+    {
+        foreach (var message in ReadMessages<ClientStateReceivedMessage>())
+        {
+            ref var position = ref GetMutable<PositionComponent>(message.Entity);
+
+            position.Value = message.Position;
+        }
+    }
 }

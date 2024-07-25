@@ -51,7 +51,7 @@ public record RemovedPlayerEventArgs(
 );
 
 /// <summary>
-/// Responsible for managing a networked game
+/// Responsible for managing a networked game.
 /// </summary>
 public class NetworkGameManager
 {
@@ -147,6 +147,11 @@ public class NetworkGameManager
     #endregion
 
     #region Send client messages 
+
+    public void SendMessage(Message message)
+    {
+        Client.Send(message);
+    }
 
     void SendPlayerName()
     {

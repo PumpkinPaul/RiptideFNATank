@@ -16,6 +16,7 @@ using Wombat.Engine;
 using RiptideFNATankCommon;
 using System;
 using RiptideFNATankClient.Networking;
+using RiptideFNATankCommon.Networking;
 
 namespace RiptideFNATankClient.Gameplay.GamePhases;
 
@@ -33,7 +34,7 @@ public class PlayGamePhase : GamePhase
     readonly NetworkGameManager _networkGameManager;
 
     //ECS
-    ECSManager _ecsManager;
+    ClientECSManager _ecsManager;
 
     //Mapping between networking and ECS
     readonly PlayerEntityMapper _playerEntityMapper = new();
@@ -57,7 +58,7 @@ public class PlayGamePhase : GamePhase
 
         _gameState = new MultiplayerGameState();
 
-        _ecsManager = new ECSManager(_networkGameManager, _playerEntityMapper, _gameState);
+        _ecsManager = new ClientECSManager(_networkGameManager, _playerEntityMapper, _gameState);
 
         _networkGameManager.SpawnedLocalPlayer += SpawnedLocalPlayer;
         _networkGameManager.SpawnedRemotePlayer += SpawnedRemotePlayer;
@@ -70,7 +71,7 @@ public class PlayGamePhase : GamePhase
 
     void SpawnedRemotePlayer(SpawnedPlayerEventArgs e)
     {
-        _ecsManager.SpawnRemotePlayer(e.Position);
+        _ecsManager.SpawnRemotePlayer(e.ClientId, e.Position);
 
         _playerEntityMapper.AddPlayer(PlayerIndex.Two, e.ClientId);
     }

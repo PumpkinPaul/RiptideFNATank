@@ -12,9 +12,8 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using System.Collections.Generic;
 
-namespace RiptideFNATankClient.Networking;
+namespace RiptideFNATankCommon.Networking;
 
 /// <summary>
 /// Maps local and network players to the entities in the ECS.
@@ -34,12 +33,9 @@ public class PlayerEntityMapper
         _clientToPlayerIndex[clientId] = playerIndex;
     }
 
-    public void MapEntity(PlayerIndex playerIndex, Entity entity)
+    public void AddPlayer(ushort clientId, Entity entity)
     {
-        _playerIndexToEntity[playerIndex] = entity;
-
-        var sessionId = _playerIndexToClientId[playerIndex];
-        _clientIdToEntity[sessionId] = entity;
+        _clientIdToEntity[clientId] = entity;
     }
 
     public void RemovePlayerByClientId(ushort clientId)

@@ -10,21 +10,33 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Networking;
+using MoonTools.ECS;
+using RiptideFNATankServer.Gameplay.Components;
+using Wombat.Engine;
+
+namespace RiptideFNATankServer.Gameplay.Systems;
 
 /// <summary>
-/// All the different types of command the client can send to the server
+/// Responsible for turning directional speed into a velocity.
 /// </summary>
-public enum ClientMessageType : ushort
+public class DirectionalSpeedSystem : MoonTools.ECS.System
 {
-    Name = 1,
-    State
-}
+    readonly Filter _filter;
 
-/// <summary>
-/// All the different types of commands the server can send to the cliebnt
-/// </summary>
-public enum ServerMessageType : ushort
-{
-    SpawnPlayer = 1
+    public DirectionalSpeedSystem(World world) : base(world)
+    {
+        _filter = FilterBuilder
+           .Include<DirectionalSpeedComponent>()
+           .Build();
+    }
+
+    public override void Update(TimeSpan delta)
+    {
+        foreach (var entity in _filter.Entities)
+        {
+            ref readonly var component = ref Get<DirectionalSpeedComponent>(entity);
+
+            Set(entity, new VelocityComponent(VectorHelper.Polar(component.DirectionInRadians, component.Speed)));
+        }
+    }
 }

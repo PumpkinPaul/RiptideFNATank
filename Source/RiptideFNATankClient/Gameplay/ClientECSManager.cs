@@ -1,20 +1,32 @@
-// Copyright Pumpkin Games Ltd. All Rights Reserved.
+/*
+__________.__        __  .__    .___       __________________      _____    ___________              __    
+\______   \__|______/  |_|__| __| _/____   \_   _____/\      \    /  _  \   \__    ___/____    ____ |  | __
+ |       _/  \____ \   __\  |/ __ |/ __ \   |    __)  /   |   \  /  /_\  \    |    |  \__  \  /    \|  |/ /
+ |    |   \  |  |_> >  | |  / /_/ \  ___/   |     \  /    |    \/    |    \   |    |   / __ \|   |  \    < 
+ |____|_  /__|   __/|__| |__\____ |\___  >  \___  /  \____|__  /\____|__  /   |____|  (____  /___|  /__|_ \
+        \/   |__|                \/    \/       \/           \/         \/                 \/     \/     \/                                                                                  
+                                                              
+Copyright Pumpkin Games Ltd. All Rights Reserved.
+
+*/
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
-using Wombat.Engine;
-using Wombat.Engine.Extensions;
-using System.Collections.Generic;
 using RiptideFNATankClient.Gameplay.Renderers;
 using RiptideFNATankClient.Gameplay.Systems;
+using RiptideFNATankClient.Networking;
+using RiptideFNATankCommon.Networking;
+using System.Collections.Generic;
+using Wombat.Engine;
+using Wombat.Engine.Extensions;
 
-namespace RiptideFNATankClient.Networking;
+namespace RiptideFNATankClient.Gameplay;
 
 /// <summary>
 /// Encapsulates management of the ECS
 /// </summary>
-public class ECSManager
+public class ClientECSManager
 {
     readonly Timekeeper _timekeeper = new();
     readonly NetworkOptions _networkOptions;
@@ -32,11 +44,9 @@ public class ECSManager
 
     readonly Queue<LocalPlayerSpawnMessage> _localPlayerSpawnMessages = new();
     readonly Queue<RemotePlayerSpawnMessage> _remotePlayerSpawnMessages = new();
-    readonly Queue<ReceivedRemotePaddleStateMessage> _matchDataVelocityAndPositionMessage = new();
-    readonly Queue<MatchDataDirectionAndPositionMessage> _matchDataDirectionAndPositionMessage = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
 
-    public ECSManager(
+    public ClientECSManager(
         NetworkGameManager networkGameManager,
         PlayerEntityMapper playerEntityMapper,
         MultiplayerGameState gameState)
@@ -55,12 +65,10 @@ public class ECSManager
             EnableSmoothing = true
         };
 
-        _systems = new MoonTools.ECS.System[]
-        {
+        _systems = [
             //Spawn the entities into the game world
             new LocalPlayerSpawnSystem(_world),
             new RemotePlayerSpawnSystem(_world, _playerEntityMapper),
-            new BallSpawnSystem(_world),
             new ScoreSpawnSystem(_world),
 
             new PlayerInputSystem(_world),   //Get input from devices and turn into game actions...
@@ -75,44 +83,17 @@ public class ECSManager
 
             //Move the entities in the world
             new MovementSystem(_world),
-            new BounceSystem(_world),
-            new AngledBounceSystem(_world),
 
-            //LateUpdate
-            //...handle sending data to remote clients
-            new GoalScoredLocalSyncSystem(_world, _networkGameManager, _gameState),
-            new BallNetworkLocalSyncSystem(_world, _networkGameManager),
+            //...handle sending data to the server
+            new PlayerSendNetworkStateSystem(_world, _networkGameManager, _timekeeper),
 
-            //Phase #1
-            //This is UpdateLocal gamer from Riptide.Tank
-            new PlayerNetworkSendLocalStateSystem(_world, _networkGameManager, _timekeeper),
-
-            //Phase #2
-            //...handle receiving data from remote clients
-            new PlayerNetworkRemoteResetSmoothingSystem(_world, _networkOptions),  //Reset the smoothing factor
-            new PlayerNetworkRemoteSyncSystem(_world),            //Update the 'simulation' state
-            new PlayerNetworkRemoteApplyPredictionSystem(_world, _timekeeper, _networkOptions, game.TargetElapsedTime), //Apply client side predication to the 'simulation' state
-            
-            //Phase #3
-            new PlayerNetworkRemoteUpdateSmoothingSystem(_world),
-            new PlayerNetworkRemoteUpdateRemoteSystem(_world, _networkOptions),
-            new PlayerNetworkRemoteApplySmoothingSystem(_world, _networkOptions),
-
-            new BallNetworkRemoteSyncSystem(_world),
             new LerpPositionSystem(_world),
 
             //Remove the dead entities
             new DestroyEntitySystem(_world)
-        };
+        ];
 
         _spriteRenderer = new SpriteRenderer(_world, BaseGame.Instance.SpriteBatch);
-
-        var color = Color.Cyan;
-
-        _world.Send(new BallSpawnMessage(
-            Position: new Vector2(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT) / 2,
-            color
-        ));
 
         _world.Send(new ScoreSpawnMessage(
             PlayerIndex: PlayerIndex.One,
@@ -137,39 +118,13 @@ public class ECSManager
         ));
     }
 
-    public void SpawnRemotePlayer(Vector2 position)
+    public void SpawnRemotePlayer(ushort clientId, Vector2 position)
     {
         //Queue entity creation in the ECS
         _remotePlayerSpawnMessages.Enqueue(new RemotePlayerSpawnMessage(
-            PlayerIndex: PlayerIndex.Two,
+            ClientId: clientId,
             Position: position,
             Color.Blue
-        ));
-    }
-
-    public void ReceivedRemotePaddleState(ReceivedRemotePaddleStateEventArgs e, ushort clientId)
-    {
-        var entity = _playerEntityMapper.GetEntityFromClientId(clientId);
-
-        if (entity == PlayerEntityMapper.INVALID_ENTITY)
-            return;
-
-        //Queue entity to begin lerping to the corrected position.
-        _matchDataVelocityAndPositionMessage.Enqueue(new ReceivedRemotePaddleStateMessage(
-            entity,
-            e.TotalSeconds,
-            e.Position,
-            e.Velocity,
-            e.MoveUp,
-            e.MoveDown
-        ));
-    }
-
-    public void ReceivedRemoteBallState(float direction, Vector2 position)
-    {
-        _matchDataDirectionAndPositionMessage.Enqueue(new MatchDataDirectionAndPositionMessage(
-            direction,
-            position
         ));
     }
 
@@ -204,8 +159,6 @@ public class ECSManager
     {
         SendMessages(_localPlayerSpawnMessages);
         SendMessages(_remotePlayerSpawnMessages);
-        SendMessages(_matchDataVelocityAndPositionMessage);
-        SendMessages(_matchDataDirectionAndPositionMessage);
         SendMessages(_destroyEntityMessage);
     }
 

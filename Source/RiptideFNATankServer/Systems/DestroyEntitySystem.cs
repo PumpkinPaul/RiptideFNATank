@@ -10,21 +10,28 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Networking;
+using MoonTools.ECS;
+
+namespace RiptideFNATankServer.Gameplay.Systems;
+
+public readonly record struct DestroyEntityMessage(
+    Entity Entity
+);
 
 /// <summary>
-/// All the different types of command the client can send to the server
+/// Removes 'dead' entities from the world.
 /// </summary>
-public enum ClientMessageType : ushort
+public sealed class DestroyEntitySystem : MoonTools.ECS.System
 {
-    Name = 1,
-    State
-}
+    public DestroyEntitySystem(World world) : base(world)
+    {
+    }
 
-/// <summary>
-/// All the different types of commands the server can send to the cliebnt
-/// </summary>
-public enum ServerMessageType : ushort
-{
-    SpawnPlayer = 1
+    public override void Update(TimeSpan delta)
+    {
+        foreach (var message in ReadMessages<DestroyEntityMessage>())
+        {
+            Destroy(message.Entity);
+        }
+    }
 }

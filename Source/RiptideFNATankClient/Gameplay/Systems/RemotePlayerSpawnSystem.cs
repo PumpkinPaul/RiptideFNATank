@@ -3,13 +3,13 @@
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
-using RiptideFNATankClient.Networking;
+using RiptideFNATankCommon.Networking;
 using System;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct RemotePlayerSpawnMessage(
-    PlayerIndex PlayerIndex,
+    ushort ClientId,
     Vector2 Position,
     Color Color
 );
@@ -35,7 +35,7 @@ public class RemotePlayerSpawnSystem : MoonTools.ECS.System
         {
             var entity = CreateEntity();
 
-            _playerEntityMapper.MapEntity(message.PlayerIndex, entity);
+            _playerEntityMapper.AddPlayer(message.ClientId, entity);
 
             Set(entity, new PositionComponent(message.Position));
             Set(entity, new ScaleComponent(new Vector2(16, 64)));
