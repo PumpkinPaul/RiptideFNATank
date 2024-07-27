@@ -78,7 +78,6 @@ public class ClientECSManager
             //Spawn the entities into the game world
             new LocalPlayerSpawnSystem(_world, _playerEntityMapper),
             new RemotePlayerSpawnSystem(_world, _playerEntityMapper),
-            new ScoreSpawnSystem(_world),
 
             new PlayerInputSystem(_world, _playerActionsBuffer),   //Get input from devices and turn into game actions...            
             
@@ -110,16 +109,6 @@ public class ClientECSManager
         ];
 
         _spriteRenderer = new SpriteRenderer(_world, BaseGame.Instance.SpriteBatch);
-
-        _world.Send(new ScoreSpawnMessage(
-            PlayerIndex: PlayerIndex.One,
-            Position: new Vector2(BaseGame.SCREEN_WIDTH * 0.25f, 21)
-        ));
-
-        _world.Send(new ScoreSpawnMessage(
-            PlayerIndex: PlayerIndex.Two,
-            Position: new Vector2(BaseGame.SCREEN_WIDTH * 0.75f, 21)
-        ));
     }
 
     public void SpawnLocalPlayer(ReceivedSpawnPlayerEventArgs e)
