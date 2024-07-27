@@ -12,11 +12,12 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Wombat.Engine;
-using RiptideFNATankCommon;
-using System;
 using RiptideFNATankClient.Networking;
+using RiptideFNATankCommon;
+using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
+using System;
+using Wombat.Engine;
 
 namespace RiptideFNATankClient.Gameplay.GamePhases;
 
@@ -28,7 +29,7 @@ namespace RiptideFNATankClient.Gameplay.GamePhases;
 /// </remarks>
 public class PlayGamePhase : GamePhase
 {
-    MultiplayerGameState _gameState;
+    GameState _gameState;
 
     //Multiplayer networking
     readonly NetworkGameManager _networkGameManager;
@@ -56,24 +57,13 @@ public class PlayGamePhase : GamePhase
     {
         base.Initialise();
 
-        _gameState = new MultiplayerGameState();
+        _gameState = new GameState();
 
         _ecsManager = new ClientECSManager(_networkGameManager, _playerEntityMapper, _gameState);
 
-        _networkGameManager.SpawnedLocalPlayer += SpawnedLocalPlayer;
-        _networkGameManager.SpawnedRemotePlayer += SpawnedRemotePlayer;
-    }
-
-    void SpawnedLocalPlayer(SpawnedPlayerEventArgs e)
-    {
-        _ecsManager.SpawnLocalPlayer(e.Position);
-    }
-
-    void SpawnedRemotePlayer(SpawnedPlayerEventArgs e)
-    {
-        _ecsManager.SpawnRemotePlayer(e.ClientId, e.Position);
-
-        _playerEntityMapper.AddPlayer(PlayerIndex.Two, e.ClientId);
+        _networkGameManager.SpawnedLocalPlayer += _ecsManager.SpawnLocalPlayer;
+        _networkGameManager.SpawnedRemotePlayer += _ecsManager.SpawnRemotePlayer;
+        _networkGameManager.ReceivedWorldState += _ecsManager.ReceivedWorldState;
     }
 
     protected override void OnUpdate(GameTime gameTime)

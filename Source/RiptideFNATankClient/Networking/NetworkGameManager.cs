@@ -11,9 +11,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 */
 
 using Microsoft.Xna.Framework;
+using MoonTools.ECS;
 using Riptide;
 using Riptide.Utils;
-using RiptideFNATankClient.Gameplay.Players;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
@@ -22,28 +22,14 @@ using System.Collections.Generic;
 
 namespace RiptideFNATankClient.Networking;
 
-public record SpawnedPlayerEventArgs(
+public record ReceivedSpawnPlayerEventArgs(
     ushort ClientId,
     Vector2 Position
 );
 
-public record ReceivedRemotePaddleStateEventArgs(
-    float TotalSeconds,
-    Vector2 Position,
-    Vector2 Velocity,
-    bool MoveUp,
-    bool MoveDown,
-    string SessionId
-);
-
-public record ReceivedRemoteBallStateEventArgs(
-    float Direction,
+public record ReceivedWorldStateEventArgs(
+    ushort ClientId,
     Vector2 Position
-);
-
-public record ReceivedRemoteScoreEventArgs(
-    int Player1Score,
-    int Player2Score
 );
 
 public record RemovedPlayerEventArgs(
@@ -61,15 +47,12 @@ public class NetworkGameManager
     public event Action ConnectionFailed;
     public event Action Disconnected;
 
-    public event Action<SpawnedPlayerEventArgs> SpawnedLocalPlayer;
-    public event Action<SpawnedPlayerEventArgs> SpawnedRemotePlayer;
-    public event EventHandler<ReceivedRemotePaddleStateEventArgs> ReceivedRemotePaddleState;
-    public event EventHandler<ReceivedRemoteBallStateEventArgs> ReceivedRemoteBallState;
-    public event EventHandler<ReceivedRemoteScoreEventArgs> ReceivedRemoteScore;
+    public event Action<ReceivedSpawnPlayerEventArgs> SpawnedLocalPlayer;
+    public event Action<ReceivedSpawnPlayerEventArgs> SpawnedRemotePlayer;
+    public event Action<ReceivedWorldStateEventArgs> ReceivedWorldState;
     public event EventHandler<RemovedPlayerEventArgs> RemovedPlayer;
 
     readonly Dictionary<ushort, Player> _players = [];
-    Player _localPlayer;
 
     public Client Client { get; private set; }
 
@@ -98,6 +81,8 @@ public class NetworkGameManager
 
     void LocalClientConnectedHandler(object sender, EventArgs e)
     {
+        Client.TimeoutTime = 50000;
+
         SendPlayerName();
         LocalClientConnected?.Invoke();
     }
@@ -130,23 +115,20 @@ public class NetworkGameManager
     #region Handle server messages 
 
     [MessageHandler((ushort)ServerMessageType.SpawnPlayer)]
-    static void ReceivedSpawnPlayer(Message message)
+    static void ReceivedSpawnPlayerFromServer(Message message)
     {
-        var clientId = message.GetUShort();
-        var name = message.GetString();
-        var position = message.GetVector2();
+        Instance.SpawnPlayer(message);
+    }
 
-#if DEBUG
-        Logger.Info($"Message handler: {nameof(ReceivedSpawnPlayer)} from client: {clientId}");
-        Logger.Debug("Read the following...");
-        Logger.Debug($"{name}");
-#endif
-        Instance.SpawnPlayer(clientId, name, position);
+    [MessageHandler((ushort)ServerMessageType.SendWorldState)]
+    static void ReceivedWorldStateFromServer(Message message)
+    {
+        Instance.ReceivedNewWorldState(message);
     }
 
     #endregion
 
-    #region Send client messages 
+    #region Send messages from client to server
 
     public void SendMessage(Message message)
     {
@@ -155,7 +137,7 @@ public class NetworkGameManager
 
     void SendPlayerName()
     {
-        var message = Message.Create(MessageSendMode.Reliable, ClientMessageType.Name);
+        var message = Message.Create(MessageSendMode.Reliable, ClientMessageType.JoinGame);
         message.AddString($"{Guid.NewGuid()}");
         Client.Send(message);
     }
@@ -180,49 +162,52 @@ public class NetworkGameManager
         _players.Clear();
     }
 
-    void SpawnPlayer(ushort clientId, string name, Vector2 position)
+    void SpawnPlayer(Message message)
     {
-#if DEBUG
-        Logger.Info($"{nameof(SpawnPlayer)}");
-        Logger.Debug($"{clientId}");
-        Logger.Debug($"{name}");
-        Logger.Debug($"{position}");
-#endif
+        var playerCount = message.GetByte();
 
-        // If the player has already been spawned, return early.
-        if (_players.ContainsKey(clientId))
+        for (var i = 0; i < playerCount; i++)
         {
-            return;
-        }
+            var clientId = message.GetUShort();
+            var name = message.GetString();
+            var position = message.GetVector2();
 
-        // Set a variable to check if the player is the local player or not.
-        var isLocal = Client.Id == clientId;
+            // If the player has already been spawned, return early.
+            if (_players.ContainsKey(clientId))
+                continue;
 
-        Player player;
+            // Set a variable to check if the player is the local player or not.
+            var isLocal = Client.Id == clientId;
 
-        // Setup the appropriate network data values if this is a remote player.
-        if (isLocal)
-        {
-            player = new LocalPlayer();
-            _localPlayer = player;
-
-            SpawnedLocalPlayer?.Invoke(new SpawnedPlayerEventArgs(clientId, position));
-        }
-        else
-        {
-            player = new NetworkPlayer
+            var player = new Player
             {
-                NetworkData = new RemotePlayerNetworkData
-                {
-
-                }
+                Name = name,
+                IsLocal = Client.Id == clientId
             };
 
-            SpawnedRemotePlayer?.Invoke(new SpawnedPlayerEventArgs(clientId, position));
-        }
+            // Setup the appropriate network data values if this is a remote player.
+            if (player.IsLocal)
+                SpawnedLocalPlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, position));
+            else
+                SpawnedRemotePlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, position));
 
-        // Add the player to the players array.
-        _players[clientId] = player;
+            // Add the player to the players array.
+            _players[clientId] = player;
+        }
+    }
+
+    void ReceivedNewWorldState(Message message)
+    {
+        var serverSequeceId = message.GetUInt();
+        var clientId = message.GetUShort();
+
+        // If the player has been removed (quit / disconnected) then NAR.
+        if (_players.ContainsKey(clientId) == false)
+            return;
+
+        var position = message.GetVector2();
+
+        ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(clientId, position));
     }
 
     void RemovePlayer(ushort clientId)
@@ -234,84 +219,5 @@ public class NetworkGameManager
 
         RemovedPlayer?.Invoke(this, new RemovedPlayerEventArgs(clientId));
     }
-
-    /// <summary>
-    /// Updates the player's velocity and position based on incoming state data.
-    /// </summary>
-    /// <param name="state">The incoming state byte array.</param>
-    private void UpdateRemotePaddleStateFromPacket(byte[] state, NetworkPlayer networkPlayer)
-    {
-        //TODO: fix the allocation here
-        //_packetReader.SetState(state);
-
-        //var totalSeconds = _packetReader.ReadSingle();
-
-        //var position = _packetReader.ReadVector2();
-        //var velocity = _packetReader.ReadVector2();
-
-        //var moveUp = _packetReader.ReadBoolean();
-        //var moveDown = _packetReader.ReadBoolean();
-
-        //ReceivedRemotePaddleState?.Invoke(
-        //    this,
-        //    new ReceivedRemotePaddleStateEventArgs(
-        //        totalSeconds,
-        //        position,
-        //        velocity,
-        //        moveUp,
-        //        moveDown,
-        //        networkPlayer.NetworkData.User.SessionId));
-    }
-
-    /// <summary>
-    /// Updates the ball's direction and position based on incoming state data.
-    /// </summary>
-    /// <param name="state">The incoming state byte array.</param>
-    private void UpdateDirectionAndPositionFromState(byte[] state)
-    {
-        //_packetReader.SetState(state);
-
-        //var direction = _packetReader.ReadSingle();
-        //var position = _packetReader.ReadVector2();
-
-        //ReceivedRemoteBallState?.Invoke(
-        //    this,
-        //    new ReceivedRemoteBallStateEventArgs(direction, position));
-    }
-
-    /// <summary>
-    /// Updates the score based on incoming state data.
-    /// </summary>
-    /// <param name="state">The incoming state byte array.</param>
-    private void UpdateScoreFromState(byte[] state)
-    {
-        //_packetReader.SetState(state);
-
-        //var player1Score = _packetReader.ReadInt32();
-        //var player2Score = _packetReader.ReadInt32();
-
-        //ReceivedRemoteScore?.Invoke(
-        //    this,
-        //    new ReceivedRemoteScoreEventArgs(player1Score, player2Score));
-    }
-
-    /// <summary>
-    /// Sends a match state message across the network.
-    /// </summary>
-    /// <param name="opCode">The operation code.</param>
-    /// <param name="state">The stringified JSON state data.</param>
-    public void SendMatchState(long opCode, string state)
-    {
-        //_RiptideConnection.Socket.SendMatchStateAsync(_currentMatch.Id, opCode, state);
-    }
-
-    /// <summary>
-    /// Sends a match state message across the network.
-    /// </summary>
-    /// <param name="opCode">The operation code.</param>
-    /// <param name="state">The stringified JSON state data.</param>
-    public void SendMatchState(long opCode, byte[] state)
-    {
-        //_RiptideConnection.Socket.SendMatchStateAsync(_currentMatch.Id, opCode, state);
-    }
 }
+ 

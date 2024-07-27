@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\ThirdParty\Riptide\RiptideNetworking\RiptideNetworking\RiptideNetworking.csproj" />
+    <ProjectReference Include="..\Wombat\Wombat.csproj" />
   </ItemGroup>
 
   <ItemGroup>

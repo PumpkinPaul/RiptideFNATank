@@ -12,9 +12,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
+using RiptideFNATankCommon.Components;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
-using RiptideFNATankServer.Gameplay.Components;
 
 namespace RiptideFNATankServer.Gameplay.Renderers;
 

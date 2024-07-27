@@ -11,34 +11,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 */
 
 using Microsoft.Xna.Framework;
-using MoonTools.ECS;
-using RiptideFNATankCommon.Components;
-using System;
 
-namespace RiptideFNATankClient.Gameplay.Systems;
+namespace RiptideFNATankCommon.Components;
 
-public readonly record struct ScoreSpawnMessage(
-    PlayerIndex PlayerIndex,
-    Vector2 Position
+public record struct PositionComponent(
+    Vector2 Value
 );
-
-/// <summary>
-/// Responsible for spawning Player entities with the correct components.
-/// </summary>
-public class ScoreSpawnSystem : MoonTools.ECS.System
-{
-    public ScoreSpawnSystem(World world) : base(world)
-    {
-    }
-
-    public override void Update(TimeSpan delta)
-    {
-        foreach (var message in ReadMessages<ScoreSpawnMessage>())
-        {
-            var entity = CreateEntity();
-
-            Set(entity, new PositionComponent(message.Position));
-            Set(entity, new ScoreComponent());
-        }
-    }
-}

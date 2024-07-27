@@ -13,32 +13,44 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using RiptideFNATankCommon.Components;
-using System;
 
-namespace RiptideFNATankClient.Gameplay.Systems;
-
-public readonly record struct ScoreSpawnMessage(
-    PlayerIndex PlayerIndex,
-    Vector2 Position
-);
+namespace RiptideFNATankCommon.Systems;
 
 /// <summary>
-/// Responsible for spawning Player entities with the correct components.
+/// Handles player actions (initiate a jump, fire a weapon, move a paddle)
 /// </summary>
-public class ScoreSpawnSystem : MoonTools.ECS.System
+public sealed class PlayerActionsSystem : MoonTools.ECS.System
 {
-    public ScoreSpawnSystem(World world) : base(world)
+    public const int PADDLE_SPEED = 5;
+
+    readonly Filter _filter;
+
+    //TODO: HACK
+    readonly bool _isClient;
+
+    public PlayerActionsSystem(World world, bool isClient) : base(world)
     {
+        _isClient = isClient;
+
+        _filter = FilterBuilder
+            .Include<PlayerActionsComponent>()
+            .Build();
     }
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<ScoreSpawnMessage>())
+        foreach (var entity in _filter.Entities)
         {
-            var entity = CreateEntity();
+            ref readonly var gameInput = ref Get<PlayerActionsComponent>(entity);
 
-            Set(entity, new PositionComponent(message.Position));
-            Set(entity, new ScoreComponent());
+            var moveUpSpeed = gameInput.MoveUp ? PADDLE_SPEED : 0;
+            var moveDownSpeed = gameInput.MoveDown ? -PADDLE_SPEED : 0;
+
+            Set(entity, new VelocityComponent(
+                new Vector2(0, moveUpSpeed + moveDownSpeed)));
+
+            if (!_isClient)
+                Set(entity, new PlayerActionsComponent());
         }
     }
 }

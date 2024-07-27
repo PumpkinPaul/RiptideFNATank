@@ -21,10 +21,12 @@ namespace RiptideFNATankCommon.Networking;
 public class PlayerEntityMapper
 {
     public const int INVALID_ENTITY = -1;
+    public const ushort INVALID_CLIENT_ID = 0;
 
     readonly Dictionary<PlayerIndex, ushort> _playerIndexToClientId = [];
     readonly Dictionary<PlayerIndex, Entity> _playerIndexToEntity = [];
     readonly Dictionary<ushort, Entity> _clientIdToEntity = [];
+    readonly Dictionary<Entity, ushort> _entityToClientId = [];
     readonly Dictionary<ushort, PlayerIndex> _clientToPlayerIndex = [];
 
     public void AddPlayer(PlayerIndex playerIndex, ushort clientId)
@@ -36,13 +38,17 @@ public class PlayerEntityMapper
     public void AddPlayer(ushort clientId, Entity entity)
     {
         _clientIdToEntity[clientId] = entity;
+        _entityToClientId[entity] = clientId;
     }
 
     public void RemovePlayerByClientId(ushort clientId)
     {
         var playerIndex = _clientToPlayerIndex[clientId];
+        var entity = _clientIdToEntity[clientId];
 
         _clientIdToEntity.Remove(clientId);
+        _entityToClientId.Remove(entity);
+
         _clientToPlayerIndex.Remove(clientId);
         _playerIndexToClientId.Remove(playerIndex);
         _playerIndexToEntity.Remove(playerIndex);
@@ -51,5 +57,10 @@ public class PlayerEntityMapper
     public Entity GetEntityFromClientId(ushort clientId)
     {
         return _clientIdToEntity.TryGetValue(clientId, out var entity) ? entity : INVALID_ENTITY;
+    }
+
+    public ushort GetClientIdFromEntity(Entity entity)
+    {
+        return _entityToClientId.TryGetValue(entity, out var clientId) ? clientId : INVALID_CLIENT_ID;
     }
 }

@@ -61,6 +61,7 @@ public class ServerNetworkManager
     {
         Server = new Server();
         Server.Start(_port, _maxClientCount);
+        Server.TimeoutTime = 50000;
         Server.ClientDisconnected += ServerClientDisconnected;
     }
 
@@ -84,18 +85,18 @@ public class ServerNetworkManager
     {
         _players[clientId] = new Player(clientId, name);
 
-        SendSpawnPlayer(clientId, name, position);
+        SendSpawnPlayer(clientId, position);
     }
 
     #region Handle client messages 
 
-    [MessageHandler((ushort)ClientMessageType.Name)]
+    [MessageHandler((ushort)ClientMessageType.JoinGame)]
     static void ReceivedClientNameHandler(ushort clientId, Message message)
     {
         Instance.ClientConnected?.Invoke(new ClientConnectedArgs(clientId, message));
     }
 
-    [MessageHandler((ushort)ClientMessageType.State)]
+    [MessageHandler((ushort)ClientMessageType.SendPlayerCommands)]
     static void ReceivedClientStateHandler(ushort clientId, Message message)
     {
         Instance.ReceivedClientState?.Invoke(new ClientStateArgs(clientId, message));
@@ -103,14 +104,30 @@ public class ServerNetworkManager
 
     #endregion
 
-    #region Send server messages 
+    #region Send server messages to client
 
-    void SendSpawnPlayer(ushort clientId, string name, Vector2 position)
+    public void SendMessageToAll(Message message)
     {
+        Server.SendToAll(message);
+    }
+
+    void SendSpawnPlayer(ushort clientId, Vector2 position)
+    {
+        // A player has joined - send a message so that the client can spawn them
+        // Late joiners will need details of all the current players
+
         var message = Message.Create(MessageSendMode.Reliable, ServerMessageType.SpawnPlayer);
-        message.AddUShort(clientId);
-        message.AddString(name);
-        message.AddVector2(position);
+        message.AddByte((byte)_players.Count);
+        foreach (var player in _players.Values)
+        {
+            message.AddUShort(player.ClientId);
+            message.AddString(player.Name);
+
+            if (clientId == player.ClientId)
+                message.AddVector2(position);
+            else
+                message.AddVector2(Vector2.Zero);
+        }
 
         Server.SendToAll(message);
     }

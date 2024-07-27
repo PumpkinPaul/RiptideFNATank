@@ -13,32 +13,30 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using RiptideFNATankCommon.Components;
-using System;
 
-namespace RiptideFNATankClient.Gameplay.Systems;
-
-public readonly record struct ScoreSpawnMessage(
-    PlayerIndex PlayerIndex,
-    Vector2 Position
-);
+namespace RiptideFNATankCommon.Systems;
 
 /// <summary>
-/// Responsible for spawning Player entities with the correct components.
+/// Reads remote match data received messages and applies the new values to the 'simulation state' - e.g. the normal component data
 /// </summary>
-public class ScoreSpawnSystem : MoonTools.ECS.System
+public abstract class UpdateTankStateSystem : MoonTools.ECS.System
 {
-    public ScoreSpawnSystem(World world) : base(world)
+    public UpdateTankStateSystem(World world) : base(world)
     {
     }
 
-    public override void Update(TimeSpan delta)
+    protected void UpdateState(
+        Entity entity,
+        ref TankState paddleState)
     {
-        foreach (var message in ReadMessages<ScoreSpawnMessage>())
-        {
-            var entity = CreateEntity();
+        ref readonly var position = ref Get<PositionComponent>(entity);
 
-            Set(entity, new PositionComponent(message.Position));
-            Set(entity, new ScoreComponent());
-        }
+        var moveUpSpeed = paddleState.MoveUp ? PlayerActionsSystem.PADDLE_SPEED : 0;
+        var moveDownSpeed = paddleState.MoveDown ? -PlayerActionsSystem.PADDLE_SPEED : 0;
+
+        paddleState.Velocity = new Vector2(0, moveUpSpeed + moveDownSpeed);
+
+        paddleState.Position += paddleState.Velocity;
+        //paddleState.Velocity *= PlayerActionsSystem.PADDLE_FRICTION;
     }
 }

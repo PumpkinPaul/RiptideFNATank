@@ -12,26 +12,27 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
+using RiptideFNATankClient.Gameplay.Components;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 using System;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
-public readonly record struct RemotePlayerSpawnMessage(
+public readonly record struct ReceivedWorldStateMessage(
     ushort ClientId,
-    Vector2 Position,
-    Color Color
+    Vector2 Position
 );
 
 /// <summary>
-/// Spawns remote networked player entities with the correct components.
+/// Handles messages from the network manager indicating new world state has arrived.
 /// </summary>
-public class RemotePlayerSpawnSystem : MoonTools.ECS.System
+public class WorldStateReceivedSystem : MoonTools.ECS.System
 {
     readonly PlayerEntityMapper _playerEntityMapper;
 
-    public RemotePlayerSpawnSystem(
+    public WorldStateReceivedSystem(
         World world,
         PlayerEntityMapper playerEntityMapper
     ) : base(world)
@@ -41,16 +42,27 @@ public class RemotePlayerSpawnSystem : MoonTools.ECS.System
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<RemotePlayerSpawnMessage>())
+        foreach (var message in ReadMessages<ReceivedWorldStateMessage>())
         {
-            var entity = CreateEntity();
+            var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
-            _playerEntityMapper.AddPlayer(message.ClientId, entity);
+            if (entity == PlayerEntityMapper.INVALID_ENTITY)
+                continue;
 
-            Set(entity, new PositionComponent(message.Position));
-            Set(entity, new ScaleComponent(new Vector2(16, 64)));
-            Set(entity, new ColorComponent(message.Color));
-            Set(entity, new VelocityComponent());
+            if (Has<PlayerInputComponent>(entity))
+            {
+                // Local player
+                continue;
+            }
+            else
+            {
+                // Remote player
+                if (Has<PositionComponent>(entity))
+                {
+                    ref var position = ref GetMutable<PositionComponent>(entity);
+                    position.Value = message.Position;
+                }
+            }
         }
     }
 }

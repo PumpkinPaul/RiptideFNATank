@@ -26,7 +26,7 @@ using Wombat.Engine;
 /// <remarks>
 /// Based on
 /// </remarks>
-public class ServerGame : Game
+public class ServerGame : BaseGame
 {
     // Multiplayer
     ServerNetworkManager _networkGameManager;
@@ -58,8 +58,6 @@ public class ServerGame : Game
         Logger.Info($"{Window.Title}");
         Logger.Info("==================================================");
 
-        _ = new GraphicsDeviceManager(this);
-
         TargetElapsedTime = TimeSpan.FromMicroseconds(1000.0f / 20);
     }
 
@@ -79,12 +77,12 @@ public class ServerGame : Game
         _networkGameManager.StartServer();
     }
 
-    protected override void LoadContent()
+    protected override void OnLoadContent()
     {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
+        _spriteBatch = BaseGame.Instance.SpriteBatch;// new SpriteBatch(GraphicsDevice);
 
-        Resources.PixelTexture = new Texture2D(GraphicsDevice, 1, 1);
-        Resources.PixelTexture.SetData(new[] { Color.White });
+        //Resources.PixelTexture = new Texture2D(GraphicsDevice, 1, 1);
+        //Resources.PixelTexture.SetData(new[] { Color.White });
 
         //Resources.DefaultSpriteFont = Content.Load<SpriteFont>("SpriteFonts/debug");
 
@@ -123,7 +121,7 @@ public class ServerGame : Game
         //   }).CreateSpriteFont(GraphicsDevice);
     }
 
-    protected override void Update(GameTime gameTime)
+    protected override void OnUpdate(GameTime gameTime)
     {
         _networkGameManager.Update();
         _ecsManager.Update(gameTime);
@@ -136,7 +134,7 @@ public class ServerGame : Game
         _networkGameManager.Stop();
     }
 
-    protected override void Draw(GameTime gameTime)
+    protected override void OnDraw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.DarkGray);
         _ecsManager.Draw();

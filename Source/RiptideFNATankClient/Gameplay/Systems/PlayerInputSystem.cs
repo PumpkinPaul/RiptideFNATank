@@ -1,9 +1,21 @@
-// Copyright Pumpkin Games Ltd. All Rights Reserved.
+/*
+__________.__        __  .__    .___       __________________      _____    ___________              __    
+\______   \__|______/  |_|__| __| _/____   \_   _____/\      \    /  _  \   \__    ___/____    ____ |  | __
+ |       _/  \____ \   __\  |/ __ |/ __ \   |    __)  /   |   \  /  /_\  \    |    |  \__  \  /    \|  |/ /
+ |    |   \  |  |_> >  | |  / /_/ \  ___/   |     \  /    |    \/    |    \   |    |   / __ \|   |  \    < 
+ |____|_  /__|   __/|__| |__\____ |\___  >  \___  /  \____|__  /\____|__  /   |____|  (____  /___|  /__|_ \
+        \/   |__|                \/    \/       \/           \/         \/                 \/     \/     \/                                                                                  
+                                                              
+Copyright Pumpkin Games Ltd. All Rights Reserved.
+
+*/
 
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
+using RiptideFNATankCommon.Components;
 using System;
+using System.Collections.Generic;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
@@ -15,10 +27,16 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 /// </example>
 public sealed class PlayerInputSystem : MoonTools.ECS.System
 {
+    readonly Queue<PlayerActionsComponent> _playerActions;
+
     readonly Filter _filter;
 
-    public PlayerInputSystem(World world) : base(world)
+    public PlayerInputSystem(
+        World world,
+        Queue<PlayerActionsComponent> playerActions) : base(world)
     {
+        _playerActions = playerActions;
+
         _filter = FilterBuilder
             .Include<PlayerInputComponent>()
             .Build();
@@ -35,9 +53,14 @@ public sealed class PlayerInputSystem : MoonTools.ECS.System
             var moveUp = keyBoardState.IsKeyDown(playerInput.MoveUpKey);
             var moveDown = keyBoardState.IsKeyDown(playerInput.MoveDownKey);
 
-            Set(entity, new PlayerActionsComponent(
+            var playerActionsThisFrame = new PlayerActionsComponent(
                 moveUp,
-                moveDown));
+                moveDown);
+
+            Set(entity, playerActionsThisFrame);
+
+            // Add the player action into the buffer too.
+            //TODO: _playerActions.Enqueue(playerActionsThisFrame);
         }
     }
 }

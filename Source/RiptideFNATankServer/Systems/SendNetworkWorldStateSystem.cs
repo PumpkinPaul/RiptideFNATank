@@ -10,47 +10,62 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-using Microsoft.Xna.Framework;
 using MoonTools.ECS;
+using Riptide;
 using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
+using RiptideFNATankServer.Networking;
 
 namespace RiptideFNATankServer.Gameplay.Systems;
 
-public readonly record struct PlayerSpawnMessage(
-    ushort ClientId,
-    Vector2 Position,
-    Color Color
-);
-
 /// <summary>
-/// Spawns player entities with the correct components.
+/// Sends the world state to clients.
 /// </summary>
-public class PlayerSpawnSystem : MoonTools.ECS.System
+public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
 {
+    readonly ServerNetworkManager _networkGameManager;
     readonly PlayerEntityMapper _playerEntityMapper;
 
-    public PlayerSpawnSystem(
+    /// <summary>
+    /// An incrementing number so that messages can be ordered / ack'd.
+    /// </summary>
+    uint _serverSequenceId;
+
+    readonly Filter _filter;
+
+    public SendNetworkWorldStateSystem(
         World world,
+        ServerNetworkManager networkGameManager,
         PlayerEntityMapper playerEntityMapper
     ) : base(world)
     {
+        _networkGameManager = networkGameManager;
         _playerEntityMapper = playerEntityMapper;
+
+        _filter = FilterBuilder
+            .Include<PositionComponent>()
+            .Build();
     }
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<PlayerSpawnMessage>())
+        foreach (var entity in _filter.Entities)
         {
-            var entity = CreateEntity();
+            var clientId = _playerEntityMapper.GetClientIdFromEntity(entity);
 
-            _playerEntityMapper.AddPlayer(message.ClientId, entity);
+            ref readonly var position = ref Get<PositionComponent>(entity);
 
-            Set(entity, new PlayerActionsComponent());
-            Set(entity, new PositionComponent(message.Position));
-            Set(entity, new ScaleComponent(new Vector2(16, 64)));
-            Set(entity, new ColorComponent(message.Color));
-            Set(entity, new VelocityComponent());
+            var message = Message.Create(MessageSendMode.Unreliable, ServerMessageType.SendWorldState);
+            message.AddUInt(_serverSequenceId);
+
+            message.AddUShort(clientId);
+            message.AddVector2(position.Value);
+
+            // Send a network packet containing the player's state.
+            _networkGameManager.SendMessageToAll(message);
         }
+
+        _serverSequenceId++;
     }
 }

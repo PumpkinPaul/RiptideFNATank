@@ -1,10 +1,20 @@
-// Copyright Pumpkin Games Ltd. All Rights Reserved.
+/*
+__________.__        __  .__    .___       __________________      _____    ___________              __    
+\______   \__|______/  |_|__| __| _/____   \_   _____/\      \    /  _  \   \__    ___/____    ____ |  | __
+ |       _/  \____ \   __\  |/ __ |/ __ \   |    __)  /   |   \  /  /_\  \    |    |  \__  \  /    \|  |/ /
+ |    |   \  |  |_> >  | |  / /_/ \  ___/   |     \  /    |    \/    |    \   |    |   / __ \|   |  \    < 
+ |____|_  /__|   __/|__| |__\____ |\___  >  \___  /  \____|__  /\____|__  /   |____|  (____  /___|  /__|_ \
+        \/   |__|                \/    \/       \/           \/         \/                 \/     \/     \/                                                                                  
+                                                              
+Copyright Pumpkin Games Ltd. All Rights Reserved.
+
+*/
 
 using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
+using RiptideFNATankCommon.Components;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
-using RiptideFNATankClient.Gameplay.Components;
 
 namespace RiptideFNATankClient.Gameplay.Renderers;
 
@@ -36,10 +46,10 @@ public class SpriteRenderer : Renderer
             ref readonly var color = ref Get<ColorComponent>(entity);
 
             var pos = position.Value;
-            if (Has<DisplayStateComponent>(entity))
+            //if (Has<DisplayStateComponent>(entity))
             {
-                ref readonly var displayState = ref Get<DisplayStateComponent>(entity);
-                pos = displayState.PaddleState.Position;
+                //ref readonly var displayState = ref Get<DisplayStateComponent>(entity);
+                //pos = displayState.PaddleState.Position;
             }
 
             var halfSize = scale.Value / 2;

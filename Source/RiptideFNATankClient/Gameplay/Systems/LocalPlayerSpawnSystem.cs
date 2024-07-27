@@ -1,14 +1,27 @@
-// Copyright Pumpkin Games Ltd. All Rights Reserved.
+/*
+__________.__        __  .__    .___       __________________      _____    ___________              __    
+\______   \__|______/  |_|__| __| _/____   \_   _____/\      \    /  _  \   \__    ___/____    ____ |  | __
+ |       _/  \____ \   __\  |/ __ |/ __ \   |    __)  /   |   \  /  /_\  \    |    |  \__  \  /    \|  |/ /
+ |    |   \  |  |_> >  | |  / /_/ \  ___/   |     \  /    |    \/    |    \   |    |   / __ \|   |  \    < 
+ |____|_  /__|   __/|__| |__\____ |\___  >  \___  /  \____|__  /\____|__  /   |____|  (____  /___|  /__|_ \
+        \/   |__|                \/    \/       \/           \/         \/                 \/     \/     \/                                                                                  
+                                                              
+Copyright Pumpkin Games Ltd. All Rights Reserved.
+
+*/
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
+using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Networking;
 using System;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct LocalPlayerSpawnMessage(
+    ushort ClientId,
     PlayerIndex PlayerIndex,
     Keys MoveUpKey,
     Keys MoveDownKey,
@@ -21,8 +34,14 @@ public readonly record struct LocalPlayerSpawnMessage(
 /// </summary>
 public class LocalPlayerSpawnSystem : MoonTools.ECS.System
 {
-    public LocalPlayerSpawnSystem(World world) : base(world)
+    readonly PlayerEntityMapper _playerEntityMapper;
+
+    public LocalPlayerSpawnSystem(
+        World world,
+        PlayerEntityMapper playerEntityMapper
+    ) : base(world)
     {
+        _playerEntityMapper = playerEntityMapper;
     }
 
     public override void Update(TimeSpan delta)
@@ -30,6 +49,8 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
         foreach (var message in ReadMessages<LocalPlayerSpawnMessage>())
         {
             var entity = CreateEntity();
+
+            _playerEntityMapper.AddPlayer(message.ClientId, entity);
 
             Set(entity, new PlayerInputComponent(message.PlayerIndex, message.MoveUpKey, message.MoveDownKey));
             Set(entity, new PositionComponent(message.Position));

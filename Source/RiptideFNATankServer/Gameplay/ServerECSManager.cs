@@ -13,13 +13,15 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
-using Riptide;
 using RiptideFNATankCommon.Extensions;
+using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
+using RiptideFNATankCommon.Systems;
 using RiptideFNATankServer.Gameplay.Renderers;
 using RiptideFNATankServer.Gameplay.Systems;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
+using Wombat.Engine.Extensions;
 using static RiptideFNATankServer.Networking.ServerNetworkManager;
 
 namespace RiptideFNATankServer.Gameplay;
@@ -47,7 +49,6 @@ public class ServerECSManager
     readonly Queue<ClientStateReceivedMessage> _queuedClientStateMessages = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
 
-
     public ServerECSManager(
         ServerNetworkManager networkGameManager,
         PlayerEntityMapper playerEntityMapper,
@@ -68,6 +69,11 @@ public class ServerECSManager
             //Spawn the entities into the game world
             new PlayerSpawnSystem(_world, _playerEntityMapper),
 
+            // ====================================================================================================
+            // World Simulation Start
+
+            new PlayerActionsSystem(_world, isClient: false), //...then process the actions (e.g. do a jump, fire a gun, etc)
+
             //Turn directions into velocity!
             new DirectionalSpeedSystem(_world),
 
@@ -78,11 +84,14 @@ public class ServerECSManager
             //Move the entities in the world
             new MovementSystem(_world),
 
-            //...handle sending data to remote clients
-            //TODO!
-
             //Remove the dead entities
-            new DestroyEntitySystem(_world)
+            new DestroyEntitySystem(_world),
+
+            // World Simulation End
+            // ====================================================================================================
+
+            //...handle sending data to remote clients
+            new SendNetworkWorldStateSystem(_world, _networkGameManager, _playerEntityMapper),
         ];
 
         _spriteRenderer = new SpriteRenderer(_world, spriteBatch);
@@ -107,7 +116,7 @@ public class ServerECSManager
     {
         _timekeeper.GameTime = gameTime;
 
-        SendAllQueuedMessages();
+        SendAllQueuedECSMessages();
 
         foreach (var system in _systems)
             system.Update(gameTime.ElapsedGameTime);
@@ -115,7 +124,7 @@ public class ServerECSManager
         _world.FinishUpdate();
     }
 
-    private void SendAllQueuedMessages()
+    private void SendAllQueuedECSMessages()
     {
         SendMessages(_queuedPlayerSpawnMessages);
         SendMessages(_queuedClientStateMessages);
@@ -130,13 +139,15 @@ public class ServerECSManager
 
     public void Draw()
     {
-        //_spriteBatch.BeginTextRendering();
+        _spriteBatch.BeginTextRendering();
+        //_spriteBatch.Begin();
 
-        _spriteBatch.Begin();
         //Draw the world
 
         //...all the entities
         _spriteRenderer.Draw();
+
+        _spriteBatch.DrawText(Resources.GameFont, "SERVER", new Vector2(BaseGame.SCREEN_WIDTH * 0.5f, BaseGame.SCREEN_HEIGHT - 48), Color.Black, Alignment.Centre);
 
         _spriteBatch.End();
     }
@@ -171,7 +182,9 @@ public class ServerECSManager
         _queuedClientStateMessages.Enqueue(new ClientStateReceivedMessage(
             entity,
             sequenceId,
-            position
+            position,
+            moveUp, 
+            moveDown
         ));
     }
 }

@@ -13,18 +13,19 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 namespace RiptideFNATankCommon.Networking;
 
 /// <summary>
-/// All the different types of command the client can send to the server
+/// All the different types of message the client can send to the server.
 /// </summary>
 public enum ClientMessageType : ushort
 {
-    Name = 1,
-    State
+    JoinGame = 1,
+    SendPlayerCommands
 }
 
 /// <summary>
-/// All the different types of commands the server can send to the cliebnt
+/// All the different types of message the server can send to the client.
 /// </summary>
 public enum ServerMessageType : ushort
 {
-    SpawnPlayer = 1
+    SpawnPlayer = 1,
+    SendWorldState
 }

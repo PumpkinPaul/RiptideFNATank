@@ -10,35 +10,28 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATankCommon.Components;
-using System;
 
-namespace RiptideFNATankClient.Gameplay.Systems;
+namespace RiptideFNATankCommon.Systems;
 
-public readonly record struct ScoreSpawnMessage(
-    PlayerIndex PlayerIndex,
-    Vector2 Position
+public readonly record struct DestroyEntityMessage(
+    Entity Entity
 );
 
 /// <summary>
-/// Responsible for spawning Player entities with the correct components.
+/// Removes 'dead' entities from the world.
 /// </summary>
-public class ScoreSpawnSystem : MoonTools.ECS.System
+public sealed class DestroyEntitySystem : MoonTools.ECS.System
 {
-    public ScoreSpawnSystem(World world) : base(world)
+    public DestroyEntitySystem(World world) : base(world)
     {
     }
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<ScoreSpawnMessage>())
+        foreach (var message in ReadMessages<DestroyEntityMessage>())
         {
-            var entity = CreateEntity();
-
-            Set(entity, new PositionComponent(message.Position));
-            Set(entity, new ScoreComponent());
+            Destroy(message.Entity);
         }
     }
 }
