@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ThirdParty\MoonTools.ECS\MoonTools.ECS.csproj" />
     <ProjectReference Include="..\..\..\..\ThirdParty\Riptide\RiptideNetworking\RiptideNetworking\RiptideNetworking.csproj" />
     <ProjectReference Include="..\RiptideFNATankCommon\RiptideFNATankCommon.csproj" />
     <ProjectReference Include="..\Wombat\Wombat.csproj" />
@@ -40,9 +41,6 @@
   <ItemGroup>
     <Reference Include="FNA">
       <HintPath>..\..\Deploy\Dependencies\Windows\FNA.dll</HintPath>
-    </Reference>
-    <Reference Include="MoonTools.ECS">
-      <HintPath>..\..\Deploy\Dependencies\Windows\MoonTools.ECS.dll</HintPath>
     </Reference>
     <Reference Include="SpriteFontPlus.FNA">
       <HintPath>..\..\Deploy\Dependencies\Windows\SpriteFontPlus.FNA.dll</HintPath>

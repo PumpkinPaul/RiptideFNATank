@@ -40,7 +40,7 @@ public sealed class LerpPositionSystem : MoonTools.ECS.System
     {
         foreach (var entity in _filter.Entities)
         {
-            ref var lerp = ref GetMutable<LerpPositionComponent>(entity);
+            ref var lerp = ref Get<LerpPositionComponent>(entity);
             ref readonly var position = ref Get<PositionComponent>(entity);
 
             // Interpolate the player's position based on the lerp timer progress.

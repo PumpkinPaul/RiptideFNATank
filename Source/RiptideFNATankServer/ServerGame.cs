@@ -58,7 +58,7 @@ public class ServerGame : BaseGame
         Logger.Info($"{Window.Title}");
         Logger.Info("==================================================");
 
-        TargetElapsedTime = TimeSpan.FromMicroseconds(1000.0f / 20);
+        TargetElapsedTime = TimeSpan.FromSeconds(1.0f / NetworkSettings.SERVER_FPS);
     }
 
     protected override void Initialize()

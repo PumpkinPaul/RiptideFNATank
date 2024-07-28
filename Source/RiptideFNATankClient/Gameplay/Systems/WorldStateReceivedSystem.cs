@@ -13,7 +13,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 using System;
@@ -59,7 +58,7 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
                 // Remote player
                 if (Has<PositionComponent>(entity))
                 {
-                    ref var position = ref GetMutable<PositionComponent>(entity);
+                    ref var position = ref Get<PositionComponent>(entity);
                     position.Value = message.Position;
                 }
             }

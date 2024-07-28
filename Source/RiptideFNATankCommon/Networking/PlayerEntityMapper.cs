@@ -20,7 +20,7 @@ namespace RiptideFNATankCommon.Networking;
 /// </summary>
 public class PlayerEntityMapper
 {
-    public const int INVALID_ENTITY = -1;
+    public static readonly Entity INVALID_ENTITY = new(uint.MaxValue);
     public const ushort INVALID_CLIENT_ID = 0;
 
     readonly Dictionary<PlayerIndex, ushort> _playerIndexToClientId = [];

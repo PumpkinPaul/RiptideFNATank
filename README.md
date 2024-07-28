@@ -17,9 +17,9 @@ A short demo project of the Atari classic, Tank - highlighting three core concep
 [MoonTools.ECS](https://gitea.moonside.games/MoonsideGames/MoonTools.ECS) is in the author's own words, "A very simple ECS system."
 
 It could be considered a 'Pure' ECS:
-- [E]ntity - Nothing more than a number - acts as an 'indexer' into the various component collections.
-- [C]omponent - Data, no behaviour - components in MoonTools.ECS are limited to unmanaged values types only, no class references are allowed here.
-- [S]ystem - Functions that operate on entities that conform to a certain set of components
+- **E**ntity - Nothing more than a number - acts as an 'indexer' into the various component collections.
+- **C**omponent - Data, no behaviour - components in MoonTools.ECS are limited to unmanaged values types only, no class references are allowed here.
+- **S**ystem - Functions that operate on entities that conform to a certain set of components
   
   > e.g. A system to move entities in the world could query for entities with both Position and Velocity components.
 
@@ -30,6 +30,11 @@ Implemented using a client / server approach based on the [Quake-III-Arena](http
 > Quake III Arena is a 1999 multiplayer-focused first-person shooter developed by id Software
 
 * [Quake 3 Source Code Review: Network Model](https://fabiensanglard.net/quake3/network.php) _by Fabien Sanglard_
+
+The engine showcases the following features:
+* 100% server authority
+* Client-side prediction and reconciliation
+* Lag compensation inc sever rollback `No need to lead shots`
 
 ## Getting Started
 

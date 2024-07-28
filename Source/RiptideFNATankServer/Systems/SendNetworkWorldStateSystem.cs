@@ -57,9 +57,14 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             ref readonly var position = ref Get<PositionComponent>(entity);
 
             var message = Message.Create(MessageSendMode.Unreliable, ServerMessageType.SendWorldState);
-            message.AddUInt(_serverSequenceId);
 
+            // Header
             message.AddUShort(clientId);
+            byte gameId = 0;
+            message.AddByte(gameId);
+
+            // Snapshot
+            message.AddUInt(_serverSequenceId);
             message.AddVector2(position.Value);
 
             // Send a network packet containing the player's state.

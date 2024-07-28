@@ -198,13 +198,16 @@ public class NetworkGameManager
 
     void ReceivedNewWorldState(Message message)
     {
-        var serverSequeceId = message.GetUInt();
+        // Header
         var clientId = message.GetUShort();
+        var gameId = message.GetByte();
 
         // If the player has been removed (quit / disconnected) then NAR.
         if (_players.ContainsKey(clientId) == false)
             return;
 
+        // Snapshot
+        var serverSequeceId = message.GetUInt();
         var position = message.GetVector2();
 
         ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(clientId, position));

@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ThirdParty\MoonTools.ECS\MoonTools.ECS.csproj" />
     <ProjectReference Include="..\..\..\..\ThirdParty\Riptide\RiptideNetworking\RiptideNetworking\RiptideNetworking.csproj" />
     <ProjectReference Include="..\Wombat\Wombat.csproj" />
   </ItemGroup>
@@ -13,9 +14,6 @@
   <ItemGroup>
     <Reference Include="FNA">
       <HintPath>..\..\Deploy\Dependencies\Windows\FNA.dll</HintPath>
-    </Reference>
-    <Reference Include="MoonTools.ECS">
-      <HintPath>..\..\Deploy\Dependencies\Windows\MoonTools.ECS.dll</HintPath>
     </Reference>
   </ItemGroup>
 

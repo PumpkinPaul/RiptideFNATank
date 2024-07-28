@@ -13,7 +13,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
-using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankClient.Gameplay.Renderers;
 using RiptideFNATankClient.Gameplay.Systems;
 using RiptideFNATankClient.Networking;
@@ -54,6 +53,11 @@ public class ClientECSManager
     readonly Queue<RemotePlayerSpawnMessage> _remotePlayerSpawnMessages = new();
     readonly Queue<ReceivedWorldStateMessage> _remoteWorldStateMessages = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
+
+    // Netcode
+    readonly NetworkTimer _networkTimer = new(serverTickRateInFPS: NetworkSettings.SERVER_FPS);
+    CircularBuffer<ReceivedWorldStateMessage> _clientStateBuffer;
+    CircularBuffer<PlayerActionsComponent> clientInputBuffer;
 
     public ClientECSManager(
         NetworkGameManager networkGameManager,
@@ -102,7 +106,7 @@ public class ClientECSManager
             // World Simulation End
             // ====================================================================================================
 
-            //...handle sending data to the server
+            //...handle sending player commands to the server
             new PlayerSendNetworkCommandsSystem(_world, _networkGameManager, _timekeeper),
 
             new LerpPositionSystem(_world),
@@ -136,7 +140,7 @@ public class ClientECSManager
 
     public void ReceivedWorldState(ReceivedWorldStateEventArgs e)
     {
-        //Queue entity creation in the ECS
+        // Server snapshot received
         _remoteWorldStateMessages.Enqueue(new ReceivedWorldStateMessage(
             ClientId: e.ClientId,
             Position: e.Position

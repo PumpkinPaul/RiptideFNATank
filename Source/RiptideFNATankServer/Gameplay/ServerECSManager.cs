@@ -13,6 +13,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
+using Riptide;
 using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
@@ -171,8 +172,15 @@ public class ServerECSManager
         if (entity == PlayerEntityMapper.INVALID_ENTITY)
             return;
 
-        var sequenceId = e.Message.GetUInt();
-        var position = e.Message.GetVector2();
+        // Header
+        var lastReceivedMessageId = e.Message.GetUInt();
+        var gameId = e.Message.GetByte();
+        var lastReceiveSnapshotId = e.Message.GetUInt();
+
+        // Payload
+        var clientPredictionInMilliseconds = e.Message.GetUShort();
+        var gameFrameNumber = e.Message.GetUInt();
+        var userCommandsCount = e.Message.GetByte();
         var moveUp = e.Message.GetBool();
         var moveDown = e.Message.GetBool();
 
@@ -181,9 +189,13 @@ public class ServerECSManager
         // Queue this new state from a client
         _queuedClientStateMessages.Enqueue(new ClientStateReceivedMessage(
             entity,
-            sequenceId,
-            position,
-            moveUp, 
+            lastReceivedMessageId,
+            gameId,
+            lastReceiveSnapshotId,
+            clientPredictionInMilliseconds,
+            gameFrameNumber,
+            userCommandsCount,
+            moveUp,
             moveDown
         ));
     }

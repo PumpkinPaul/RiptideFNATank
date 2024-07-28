@@ -68,13 +68,19 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
                 ref readonly var playerActions = ref Get<PlayerActionsComponent>(entity);
 
                 var message = Message.Create(MessageSendMode.Unreliable, ClientMessageType.SendPlayerCommands);
-                message.AddUInt(_sequenceId);
 
-                // Add input commands.
-                message.AddVector2(position.Value);
+                // Header
+                message.AddUInt(0); //TODO: sequence number of last received server message
+                byte gameId = 0;
+                message.AddByte(gameId);
+                message.AddUInt(0); //TODO: sequence number of last received server snapshot
 
-                // Also add our current inputs. These can be used to more accurately
-                // predict how the player is likely to move in the future.
+                // Payload
+                message.AddUShort(0); //TODO: Client prediction in milliseconds
+                message.AddUInt(0); //TODO: Game frame number
+                message.AddByte(1); //TODO: number of user commands
+
+                // Add user commands.
                 message.AddBool(playerActions.MoveUp);
                 message.AddBool(playerActions.MoveDown);
 
