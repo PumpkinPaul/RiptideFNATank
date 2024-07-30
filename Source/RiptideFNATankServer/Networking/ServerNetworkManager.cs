@@ -26,6 +26,11 @@ public class ServerNetworkManager
 {
     static ServerNetworkManager Instance;
 
+    /// <summary>
+    /// A value between 0 (no out of order packets) and 100 (all packets out of order)
+    /// </summary>
+    public int OutOfOrderPacketPercentage { get; set; } = 10;
+
     public readonly record struct ClientConnectedArgs(
         ushort ClientId,
         Message Message);
@@ -81,11 +86,11 @@ public class ServerNetworkManager
         Server.Stop();
     }
 
-    public void SpawnPlayer(ushort clientId, string name, Vector2 position)
+    public void SpawnPlayer(ushort clientId, string name, Vector2 position, uint initialServerSequenceId)
     {
         _players[clientId] = new Player(clientId, name);
 
-        SendSpawnPlayer(clientId, position);
+        SendSpawnPlayer(clientId, position, initialServerSequenceId);
     }
 
     #region Handle client messages 
@@ -111,7 +116,7 @@ public class ServerNetworkManager
         Server.SendToAll(message);
     }
 
-    void SendSpawnPlayer(ushort clientId, Vector2 position)
+    void SendSpawnPlayer(ushort clientId, Vector2 position, uint initialServerSequenceId)
     {
         // A player has joined - send a message so that the client can spawn them
         // Late joiners will need details of all the current players
@@ -122,6 +127,8 @@ public class ServerNetworkManager
         {
             message.AddUShort(player.ClientId);
             message.AddString(player.Name);
+
+            message.AddUInt(initialServerSequenceId);
 
             if (clientId == player.ClientId)
                 message.AddVector2(position);

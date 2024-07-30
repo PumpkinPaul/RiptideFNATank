@@ -80,7 +80,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
 
                 // Payload
                 message.AddUShort(0); //TODO: Client prediction in milliseconds
-                message.AddUInt(worldState.CurrentWorldTick); //TODO: Game frame number
+                message.AddUInt(worldState.CurrentWorldTick);
                 message.AddByte(1); //TODO: number of user commands
 
                 // Add user commands.

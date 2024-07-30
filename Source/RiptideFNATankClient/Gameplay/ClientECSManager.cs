@@ -80,7 +80,7 @@ public class ClientECSManager
 
         _world = new World();
 
-        // Add a single for common simulations state
+        // Add a single for common simulation state
         // e.g.
         // Current simulation tick
         // Last received server sequence
@@ -137,6 +137,7 @@ public class ClientECSManager
         //Queue entity creation in the ECS
         _localPlayerSpawnMessages.Enqueue(new LocalPlayerSpawnMessage(
             ClientId: e.ClientId,
+            InitialServerSequenceId: e.InitialServerSequenceId,
             PlayerIndex: PlayerIndex.One,
             MoveUpKey: Keys.Q,
             MoveDownKey: Keys.A,

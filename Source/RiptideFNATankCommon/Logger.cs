@@ -19,6 +19,7 @@ public static class Logger
 {
     public static void Debug(string value) => WriteLineInternal(value, ConsoleColor.DarkGray);
     public static void Info(string value) => WriteLineInternal(value, ConsoleColor.White);
+    public static void Success(string value) => WriteLineInternal(value, ConsoleColor.Green);
     public static void Warning(string value) => WriteLineInternal(value, ConsoleColor.Yellow);
     public static void Error(string value) => WriteLineInternal(value, ConsoleColor.Red);
 

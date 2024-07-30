@@ -28,8 +28,8 @@ public readonly record struct ReceivedWorldStateMessage(
     Vector2 Position
 );
 
-//TODO: I'm not sure this is the best name for this
 public record struct SimulationStateComponent(
+    uint InitialServerSequenceId,
     uint LastReceivedServerSequenceId,
     uint CurrentWorldTick
 );
@@ -85,7 +85,7 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
                 }
                 else //else if (newState.sequence > lastState.sequence)
                 {
-                    Logger.Info($"Received anew packet from server for sequence: {message.ServerSequenceId}.");
+                    //Logger.Info($"Received a new packet from server for sequence: {message.ServerSequenceId}.");
 
                     //_masterWorldState = new WorldState
                     //{

@@ -17,6 +17,7 @@ using Microsoft.Xna.Framework.Graphics;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankServer.Gameplay;
+using RiptideFNATankServer.Gameplay.Systems;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
 
@@ -152,7 +153,7 @@ public class ServerGame : BaseGame
 
         //TODO: probably need some logic here to do map stuff, get spawn points, etc
         var position = _playerSpawnPoints[_playerSpawnPointsIdx];
-        _networkGameManager.SpawnPlayer(e.ClientId, name, position);
+        _networkGameManager.SpawnPlayer(e.ClientId, name, position, SendNetworkWorldStateSystem._serverSequenceId);
 
         _ecsManager.SpawnPlayer(e.ClientId, name, position);
 
