@@ -12,11 +12,12 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
 using Riptide;
+using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankClient.Networking;
 using RiptideFNATankCommon.Components;
-using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
 using System;
+using Wombat.Engine;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
@@ -50,8 +51,6 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
         _timekeeper = timekeeper;
 
         _filter = FilterBuilder
-            .Include<PositionComponent>()
-            .Include<VelocityComponent>()
             .Include<PlayerActionsComponent>()
             .Build();
     }
@@ -61,10 +60,14 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
         // Periodically send our state to everyone in the session.
         //if (_stateSyncTimer <= 0)
         {
+
+            ref readonly var worldState = ref GetSingleton<SimulationStateComponent>();
+
             foreach (var entity in _filter.Entities)
             {
-                ref readonly var position = ref Get<PositionComponent>(entity);
-                ref readonly var velocity = ref Get<VelocityComponent>(entity);
+                if (RandomHelper.FastRandom.PercentageChance(_networkGameManager.DroppedPacketPercentage))
+                    continue;
+
                 ref readonly var playerActions = ref Get<PlayerActionsComponent>(entity);
 
                 var message = Message.Create(MessageSendMode.Unreliable, ClientMessageType.SendPlayerCommands);
@@ -73,11 +76,11 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
                 message.AddUInt(0); //TODO: sequence number of last received server message
                 byte gameId = 0;
                 message.AddByte(gameId);
-                message.AddUInt(0); //TODO: sequence number of last received server snapshot
+                message.AddUInt(worldState.LastReceivedServerSequenceId);
 
                 // Payload
                 message.AddUShort(0); //TODO: Client prediction in milliseconds
-                message.AddUInt(0); //TODO: Game frame number
+                message.AddUInt(worldState.CurrentWorldTick); //TODO: Game frame number
                 message.AddByte(1); //TODO: number of user commands
 
                 // Add user commands.

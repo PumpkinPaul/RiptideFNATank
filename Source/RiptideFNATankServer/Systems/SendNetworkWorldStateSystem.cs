@@ -16,6 +16,7 @@ using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankServer.Networking;
+using Wombat.Engine;
 
 namespace RiptideFNATankServer.Gameplay.Systems;
 
@@ -52,6 +53,9 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
     {
         foreach (var entity in _filter.Entities)
         {
+            //Simulate out of order packets
+            var serverSequenceId = RandomHelper.FastRandom.PercentageChance(10) ? 1 : _serverSequenceId;
+
             var clientId = _playerEntityMapper.GetClientIdFromEntity(entity);
 
             ref readonly var position = ref Get<PositionComponent>(entity);
@@ -64,7 +68,7 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             message.AddByte(gameId);
 
             // Snapshot
-            message.AddUInt(_serverSequenceId);
+            message.AddUInt(serverSequenceId);
             message.AddVector2(position.Value);
 
             // Send a network packet containing the player's state.

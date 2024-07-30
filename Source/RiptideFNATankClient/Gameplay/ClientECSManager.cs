@@ -13,6 +13,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
+using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankClient.Gameplay.Renderers;
 using RiptideFNATankClient.Gameplay.Systems;
 using RiptideFNATankClient.Networking;
@@ -41,14 +42,25 @@ public class ClientECSManager
     //Renderers
     readonly SpriteRenderer _spriteRenderer;
 
+    // DI
     readonly PlayerEntityMapper _playerEntityMapper;
     readonly NetworkGameManager _networkGameManager;
 
-    // State
-    readonly GameState _gameState;
-    readonly Queue<PlayerActionsComponent> _playerActionsBuffer = new();
-    int _lastAckedPlayerInputFromServer = -1;
+    // Snapshot buffers for input and state used for prediction & replay.
+    readonly PlayerActionsComponent[] _localPlayerActionsSnapshots = new PlayerActionsComponent[1024];
+    readonly PlayerState[] _localPlayerStateSnapshots = new PlayerState[1024];
 
+    // Queue for incoming world states.
+    readonly Queue<WorldState> _worldStateQueue = new();
+
+    // The last received server world tick.
+    // TODO Not public
+    public int _lastServerWorldTick = 0;
+
+    // The last tick that the server has acknowledged our input for.
+    int _lastAckedInputTick = 0;
+
+    // Queued network messages
     readonly Queue<LocalPlayerSpawnMessage> _localPlayerSpawnMessages = new();
     readonly Queue<RemotePlayerSpawnMessage> _remotePlayerSpawnMessages = new();
     readonly Queue<ReceivedWorldStateMessage> _remoteWorldStateMessages = new();
@@ -61,14 +73,19 @@ public class ClientECSManager
 
     public ClientECSManager(
         NetworkGameManager networkGameManager,
-        PlayerEntityMapper playerEntityMapper,
-        GameState gameState)
+        PlayerEntityMapper playerEntityMapper)
     {
         _networkGameManager = networkGameManager;
         _playerEntityMapper = playerEntityMapper;
-        _gameState = gameState;
 
         _world = new World();
+
+        // Add a single for common simulations state
+        // e.g.
+        // Current simulation tick
+        // Last received server sequence
+        // etc
+        _world.Set(_world.CreateEntity(), new SimulationStateComponent());
 
         _networkOptions = new NetworkOptions
         {
@@ -77,13 +94,13 @@ public class ClientECSManager
         };
 
         _systems = [
-            new WorldStateReceivedSystem(_world, _playerEntityMapper),
+            new WorldStateReceivedSystem(_world, _worldStateQueue,  _playerEntityMapper),
 
             //Spawn the entities into the game world
             new LocalPlayerSpawnSystem(_world, _playerEntityMapper),
             new RemotePlayerSpawnSystem(_world, _playerEntityMapper),
 
-            new PlayerInputSystem(_world, _playerActionsBuffer),   //Get input from devices and turn into game actions...            
+            new PlayerInputSystem(_world, _localPlayerActionsSnapshots),   //Get input from devices and turn into game actions...            
             
             // ====================================================================================================
             // World Simulation Start
@@ -94,7 +111,7 @@ public class ClientECSManager
             new DirectionalSpeedSystem(_world),
 
             //Collisions processors
-            new WorldCollisionSystem(_world, _gameState, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
+            new WorldCollisionSystem(_world, _worldStateQueue, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
             new EntityCollisionSystem(_world, BaseGame.SCREEN_WIDTH),
 
             //Move the entities in the world
@@ -143,6 +160,7 @@ public class ClientECSManager
         // Server snapshot received
         _remoteWorldStateMessages.Enqueue(new ReceivedWorldStateMessage(
             ClientId: e.ClientId,
+            ServerSequenceId: e.ServerSequenceId,
             Position: e.Position
         ));
     }

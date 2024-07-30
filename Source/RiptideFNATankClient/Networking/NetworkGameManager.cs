@@ -11,7 +11,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 */
 
 using Microsoft.Xna.Framework;
-using MoonTools.ECS;
 using Riptide;
 using Riptide.Utils;
 using RiptideFNATankCommon;
@@ -29,6 +28,7 @@ public record ReceivedSpawnPlayerEventArgs(
 
 public record ReceivedWorldStateEventArgs(
     ushort ClientId,
+    uint ServerSequenceId,
     Vector2 Position
 );
 
@@ -42,6 +42,16 @@ public record RemovedPlayerEventArgs(
 public class NetworkGameManager
 {
     static NetworkGameManager Instance;
+
+    /// <summary>
+    /// A value between 0 (no dropped packets) and 100 (all dropped packets)
+    /// </summary>
+    public int DroppedPacketPercentage { get; set; } = 10;
+
+    /// <summary>
+    /// TODO: Simulates lag
+    /// </summary>
+    public float LagDelayInSeconds { get; set; } = 0;
 
     public event Action LocalClientConnected;
     public event Action ConnectionFailed;
@@ -210,7 +220,7 @@ public class NetworkGameManager
         var serverSequeceId = message.GetUInt();
         var position = message.GetVector2();
 
-        ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(clientId, position));
+        ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(clientId, serverSequeceId, position));
     }
 
     void RemovePlayer(ushort clientId)

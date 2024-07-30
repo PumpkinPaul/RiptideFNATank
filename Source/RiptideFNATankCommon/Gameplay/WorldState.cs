@@ -14,11 +14,32 @@ using Microsoft.Xna.Framework;
 
 namespace RiptideFNATankCommon.Gameplay;
 
-public class GameState
+public class WorldState
 {
-    public Dictionary<ushort, Vector2> Positions = [];
+    /// <summary>
+    /// The world tick this data represents.
+    /// </summary>
+    public uint WorldTick; // AKA ServerSequenceId
+
+    /// <summary>
+    /// The last world tick the server acknowledged for you. 
+    /// <para>
+    /// The client should use this to determine the last acked input, as well as to compute its relative simulation offset.
+    /// </para>
+    /// </summary>
+    public int YourLatestInputTick { get; set; }
+
+    /// <summary>
+    /// States for all active players.
+    /// </summary>
+    public Dictionary<ushort, PlayerState> PlayerStates = [];
 
     // Other state
-    //public AllTheMissiles etc
+    // public AllTheMissiles etc
     public Dictionary<ushort, ushort> Scores;
 }
+
+public record struct PlayerState(
+    uint ClientSequenceIdAck,
+    Vector2 Position
+);

@@ -15,7 +15,6 @@ using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankCommon.Components;
 using System;
-using System.Collections.Generic;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
@@ -27,13 +26,13 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 /// </example>
 public sealed class PlayerInputSystem : MoonTools.ECS.System
 {
-    readonly Queue<PlayerActionsComponent> _playerActions;
+    readonly PlayerActionsComponent[] _playerActions;
 
     readonly Filter _filter;
 
     public PlayerInputSystem(
         World world,
-        Queue<PlayerActionsComponent> playerActions) : base(world)
+        PlayerActionsComponent[] playerActions) : base(world)
     {
         _playerActions = playerActions;
 
@@ -48,7 +47,7 @@ public sealed class PlayerInputSystem : MoonTools.ECS.System
 
         foreach (var entity in _filter.Entities)
         {
-            ref readonly var playerInput = ref Get<PlayerInputComponent>(entity);
+            ref var playerInput = ref Get<PlayerInputComponent>(entity);
 
             var moveUp = keyBoardState.IsKeyDown(playerInput.MoveUpKey);
             var moveDown = keyBoardState.IsKeyDown(playerInput.MoveDownKey);
@@ -60,7 +59,7 @@ public sealed class PlayerInputSystem : MoonTools.ECS.System
             Set(entity, playerActionsThisFrame);
 
             // Add the player action into the buffer too.
-            //TODO: _playerActions.Enqueue(playerActionsThisFrame);
+            _playerActions[0] = playerActionsThisFrame;
         }
     }
 }

@@ -16,10 +16,11 @@ using RiptideFNATankCommon.Components;
 namespace RiptideFNATankServer.Gameplay.Systems;
 
 public readonly record struct ClientStateReceivedMessage(
+    ushort ClientId,
     Entity Entity,
     uint LastReceivedMessageId,
     byte GameId,
-    uint LastReceiveSnapshotId,
+    uint LastReceivedSnapshotId,
     ushort ClientPredictionInMilliseconds,
     uint GameFrameNumber,
     byte UserCommandsCount,
@@ -32,6 +33,8 @@ public readonly record struct ClientStateReceivedMessage(
 /// </summary>
 public sealed class ClientStateReceivedSystem : MoonTools.ECS.System
 {
+    Dictionary<ushort, uint> _clientAcks = new();
+
     public ClientStateReceivedSystem(World world) : base(world)
     {
     }
@@ -40,8 +43,10 @@ public sealed class ClientStateReceivedSystem : MoonTools.ECS.System
     {
         foreach (var message in ReadMessages<ClientStateReceivedMessage>())
         {
-            //ref var position = ref GetMutable<PositionComponent>(message.Entity);
-            //position.Value = message.Position;
+            if (_clientAcks.ContainsKey(message.ClientId) == false)
+                _clientAcks[message.ClientId] = new();
+
+            _clientAcks[message.ClientId] = message.LastReceivedSnapshotId;
 
             ref var playerActions = ref Get<PlayerActionsComponent>(message.Entity);
             Set(message.Entity, new PlayerActionsComponent(message.MoveUp, message.MoveDown));            

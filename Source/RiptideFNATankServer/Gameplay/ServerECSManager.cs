@@ -44,11 +44,16 @@ public class ServerECSManager
 
     readonly PlayerEntityMapper _playerEntityMapper;
     readonly ServerNetworkManager _networkGameManager;
-    readonly GameState _gameState;
+    readonly WorldState _gameState;
 
     readonly Queue<PlayerSpawnMessage> _queuedPlayerSpawnMessages = new();
     readonly Queue<ClientStateReceivedMessage> _queuedClientStateMessages = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
+
+    // This is possibly temp while I try to figure this stuff out
+    // Master gamestate
+    // Player snapshots
+    // Dummy gamestate
 
     public ServerECSManager(
         ServerNetworkManager networkGameManager,
@@ -57,7 +62,7 @@ public class ServerECSManager
     {
         _networkGameManager = networkGameManager;
         _playerEntityMapper = playerEntityMapper;
-        _gameState = new GameState();
+        _gameState = new WorldState();
         _spriteBatch = spriteBatch;
 
         _world = new World();
@@ -79,7 +84,7 @@ public class ServerECSManager
             new DirectionalSpeedSystem(_world),
 
             //Collisions processors
-            new WorldCollisionSystem(_world, _gameState, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
+            new WorldCollisionSystem(_world, /*TODO*/ null, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
             new EntityCollisionSystem(_world, BaseGame.SCREEN_WIDTH),
 
             //Move the entities in the world
@@ -175,7 +180,7 @@ public class ServerECSManager
         // Header
         var lastReceivedMessageId = e.Message.GetUInt();
         var gameId = e.Message.GetByte();
-        var lastReceiveSnapshotId = e.Message.GetUInt();
+        var lastReceivedSnapshotId = e.Message.GetUInt();
 
         // Payload
         var clientPredictionInMilliseconds = e.Message.GetUShort();
@@ -188,10 +193,11 @@ public class ServerECSManager
 
         // Queue this new state from a client
         _queuedClientStateMessages.Enqueue(new ClientStateReceivedMessage(
+            e.ClientId,
             entity,
             lastReceivedMessageId,
             gameId,
-            lastReceiveSnapshotId,
+            lastReceivedSnapshotId,
             clientPredictionInMilliseconds,
             gameFrameNumber,
             userCommandsCount,

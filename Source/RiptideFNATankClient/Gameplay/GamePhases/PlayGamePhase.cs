@@ -29,7 +29,7 @@ namespace RiptideFNATankClient.Gameplay.GamePhases;
 /// </remarks>
 public class PlayGamePhase : GamePhase
 {
-    GameState _gameState;
+    WorldState _gameState;
 
     //Multiplayer networking
     readonly NetworkGameManager _networkGameManager;
@@ -57,9 +57,7 @@ public class PlayGamePhase : GamePhase
     {
         base.Initialise();
 
-        _gameState = new GameState();
-
-        _ecsManager = new ClientECSManager(_networkGameManager, _playerEntityMapper, _gameState);
+        _ecsManager = new ClientECSManager(_networkGameManager, _playerEntityMapper);
 
         _networkGameManager.SpawnedLocalPlayer += _ecsManager.SpawnLocalPlayer;
         _networkGameManager.SpawnedRemotePlayer += _ecsManager.SpawnRemotePlayer;
