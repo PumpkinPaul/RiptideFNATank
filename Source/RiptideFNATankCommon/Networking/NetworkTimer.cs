@@ -13,12 +13,12 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 namespace RiptideFNATankCommon.Networking;
 
 /// <summary>
-/// A clint / server synchronished timer.
+/// A client / server synchronished timer.
 /// <para>
 /// The client will run faster than the server (e.g.) 60 FPS while the server runs slower at (e.g.) 20 FPS.
 /// </para>
 /// <para>
-/// This will allow us know whch cliet ticks relate to whcih server ticks and vice versa
+/// This will allow us know whch client ticks relate to whcih server ticks and vice versa
 /// </para>
 /// </summary>
 /// <param name="_serverTickRateInFPS"></param>

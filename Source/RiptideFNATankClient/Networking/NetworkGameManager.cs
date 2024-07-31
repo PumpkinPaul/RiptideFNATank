@@ -23,13 +23,13 @@ namespace RiptideFNATankClient.Networking;
 
 public record ReceivedSpawnPlayerEventArgs(
     ushort ClientId,
-    uint InitialServerSequenceId,
+    uint InitialServerTick,
     Vector2 Position
 );
 
 public record ReceivedWorldStateEventArgs(
     ushort ClientId,
-    uint ServerSequenceId,
+    uint ServerTick,
     Vector2 Position
 );
 
@@ -181,7 +181,7 @@ public class NetworkGameManager
         {
             var clientId = message.GetUShort();
             var name = message.GetString();
-            var initialServerSequenceId = message.GetUInt();
+            var initialServerTick = message.GetUInt();
             var position = message.GetVector2();
 
             // If the player has already been spawned, return early.
@@ -199,7 +199,7 @@ public class NetworkGameManager
 
             // Setup the appropriate network data values if this is a remote player.
             if (player.IsLocal)
-                SpawnedLocalPlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, initialServerSequenceId, position));
+                SpawnedLocalPlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, initialServerTick, position));
             else
                 SpawnedRemotePlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, 0, position));
 

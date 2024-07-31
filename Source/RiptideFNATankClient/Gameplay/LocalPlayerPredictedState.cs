@@ -12,34 +12,17 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 
-namespace RiptideFNATankCommon.Gameplay;
+namespace RiptideFNATankClient.Gameplay;
 
-public class WorldState
-{
-    /// <summary>
-    /// The world tick this data represents.
-    /// </summary>
-    public uint ServerTick;
-
-    /// <summary>
-    /// The last world tick the server acknowledged for you. 
-    /// <para>
-    /// The client should use this to determine the last acked input, as well as to compute its relative simulation offset.
-    /// </para>
-    /// </summary>
-    public int YourLatestInputTick { get; set; }
-
-    /// <summary>
-    /// States for all active players.
-    /// </summary>
-    public Dictionary<ushort, PlayerState> PlayerStates = [];
-
-    // Other state
-    // public AllTheMissiles etc
-    public Dictionary<ushort, ushort> Scores;
-}
-
-public record struct PlayerState(
-    uint ClientTickAck,
+/// <summary>
+/// Predicted state for the local player.
+/// <para>
+/// State for the local player, cached at the end of the simulation phase based on their inputs and the simulation step.
+/// </para>
+/// <para>
+/// It is predicted, as the server is authoritative and may well disagree with what the client predicts.
+/// </para>
+/// </summary>
+public record struct LocalPlayerPredictedState(
     Vector2 Position
 );

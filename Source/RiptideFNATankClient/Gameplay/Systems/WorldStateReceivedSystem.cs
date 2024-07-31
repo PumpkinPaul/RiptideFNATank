@@ -24,13 +24,16 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct ReceivedWorldStateMessage(
     ushort ClientId,
-    uint ServerSequenceId,
+    uint ServerTick,
     Vector2 Position
 );
 
 public record struct SimulationStateComponent(
-    uint InitialServerSequenceId,
-    uint LastReceivedServerSequenceId,
+    //TODO: this is the tick on the server when the client joined
+    // Wondering if we should start the client tick (CurrentWorldTick) at this value so the the worlds are in sync.
+    // This might make reconciliation easier.
+    uint InitialServerTick,
+    uint LastReceivedServerTick,
     uint CurrentWorldTick
 );
 
@@ -73,23 +76,23 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
             {
                 // Local player
                 // Ensure the new state > the last state received
-                if (message.ServerSequenceId < simulationState.LastReceivedServerSequenceId)
+                if (message.ServerTick < simulationState.LastReceivedServerTick)
                 {
                     // Discard packet
-                    Logger.Warning($"Received an old packet from server for sequence: {message.ServerSequenceId}. Client has already received state for sequence: {simulationState.LastReceivedServerSequenceId}.");
+                    Logger.Warning($"Received an old packet from server for sequence: {message.ServerTick}. Client has already received state for sequence: {simulationState.LastReceivedServerTick}.");
                 }
-                else if (message.ServerSequenceId == simulationState.LastReceivedServerSequenceId)
+                else if (message.ServerTick == simulationState.LastReceivedServerTick)
                 {
                     // Duplicate packet?
-                    Logger.Warning($"Received a duplicate packet from server for sequence: {message.ServerSequenceId}.");
+                    Logger.Warning($"Received a duplicate packet from server for sequence: {message.ServerTick}.");
                 }
                 else //else if (newState.sequence > lastState.sequence)
                 {
-                    //Logger.Info($"Received a new packet from server for sequence: {message.ServerSequenceId}.");
+                    //Logger.Info($"Received a new packet from server for sequence: {message.ServerTick}.");
 
                     //_masterWorldState = new WorldState
                     //{
-                    //    WorldTick = message.ServerSequenceId
+                    //    WorldTick = message.ServerTick
                     //};
 
                     //if (_masterWorldState.PlayerStates.TryGetValue(message.ClientId, out var lastPlayerState) == false)
@@ -98,7 +101,7 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
                     //    _masterWorldState.PlayerStates[message.ClientId] = lastPlayerState;
                     //}
 
-                    simulationState.LastReceivedServerSequenceId = message.ServerSequenceId;
+                    simulationState.LastReceivedServerTick = message.ServerTick;
                 }
 
                 continue;

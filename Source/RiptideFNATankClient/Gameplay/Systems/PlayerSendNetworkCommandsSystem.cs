@@ -76,7 +76,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
                 message.AddUInt(0); //TODO: sequence number of last received server message
                 byte gameId = 0;
                 message.AddByte(gameId);
-                message.AddUInt(worldState.LastReceivedServerSequenceId);
+                message.AddUInt(worldState.LastReceivedServerTick);
 
                 // Payload
                 message.AddUShort(0); //TODO: Client prediction in milliseconds

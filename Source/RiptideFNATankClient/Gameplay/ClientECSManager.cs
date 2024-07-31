@@ -13,7 +13,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
-using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankClient.Gameplay.Renderers;
 using RiptideFNATankClient.Gameplay.Systems;
 using RiptideFNATankClient.Networking;
@@ -47,18 +46,18 @@ public class ClientECSManager
     readonly NetworkGameManager _networkGameManager;
 
     // Snapshot buffers for input and state used for prediction & replay.
-    readonly PlayerActionsComponent[] _localPlayerActionsSnapshots = new PlayerActionsComponent[1024];
-    readonly PlayerState[] _localPlayerStateSnapshots = new PlayerState[1024];
+    
+    // A buffer of client inputs
+    readonly CircularBuffer<PlayerActionsComponent> _localPlayerActionsSnapshots = new(1024);
+
+    // Predicted client state - client writes this after simulation so that it can be verified with the server state.
+    readonly CircularBuffer<LocalPlayerPredictedState> _localPlayerStateSnapshots = new (1024);
+
+    // Authoritative state received from the server 
+    readonly CircularBuffer<PlayerState> _serverStateBuffer = new(1024);
 
     // Queue for incoming world states.
     readonly Queue<WorldState> _worldStateQueue = new();
-
-    // The last received server world tick.
-    // TODO Not public
-    public int _lastServerWorldTick = 0;
-
-    // The last tick that the server has acknowledged our input for.
-    int _lastAckedInputTick = 0;
 
     // Queued network messages
     readonly Queue<LocalPlayerSpawnMessage> _localPlayerSpawnMessages = new();
@@ -68,9 +67,7 @@ public class ClientECSManager
 
     // Netcode
     readonly NetworkTimer _networkTimer = new(serverTickRateInFPS: NetworkSettings.SERVER_FPS);
-    CircularBuffer<ReceivedWorldStateMessage> _clientStateBuffer;
-    CircularBuffer<PlayerActionsComponent> clientInputBuffer;
-
+    
     public ClientECSManager(
         NetworkGameManager networkGameManager,
         PlayerEntityMapper playerEntityMapper)
@@ -96,35 +93,39 @@ public class ClientECSManager
         _systems = [
             new WorldStateReceivedSystem(_world, _worldStateQueue,  _playerEntityMapper),
 
-            //Spawn the entities into the game world
+            // Spawn the entities into the game world
             new LocalPlayerSpawnSystem(_world, _playerEntityMapper),
             new RemotePlayerSpawnSystem(_world, _playerEntityMapper),
 
             new PlayerInputSystem(_world, _localPlayerActionsSnapshots),   //Get input from devices and turn into game actions...            
             
+            // Handle sending player commands to the server - do this as soon as we have them.
+            new PlayerSendNetworkCommandsSystem(_world, _networkGameManager, _timekeeper),
+
             // ====================================================================================================
             // World Simulation Start
+            // The following systems should be the same between client and server to get a consistent game
 
             new PlayerActionsSystem(_world, isClient: true), //...then process the actions (e.g. do a jump, fire a gun, etc)
 
-            //Turn directions into velocity!
+            // Turn directions into velocity!
             new DirectionalSpeedSystem(_world),
 
-            //Collisions processors
+            // Collisions processors
             new WorldCollisionSystem(_world, _worldStateQueue, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
             new EntityCollisionSystem(_world, BaseGame.SCREEN_WIDTH),
 
-            //Move the entities in the world
+            // Move the entities in the world
             new MovementSystem(_world),
 
-            //Remove the dead entities
+            // Remove the dead entities
             new DestroyEntitySystem(_world),
 
             // World Simulation End
             // ====================================================================================================
 
-            //...handle sending player commands to the server
-            new PlayerSendNetworkCommandsSystem(_world, _networkGameManager, _timekeeper),
+            // Cache the player state (for the local player) - used for server state reconciliation
+            new SnapshotPlayerStateSystem(_world, _localPlayerStateSnapshots),
 
             new LerpPositionSystem(_world),
         ];
@@ -137,7 +138,7 @@ public class ClientECSManager
         //Queue entity creation in the ECS
         _localPlayerSpawnMessages.Enqueue(new LocalPlayerSpawnMessage(
             ClientId: e.ClientId,
-            InitialServerSequenceId: e.InitialServerSequenceId,
+            InitialServerTick: e.InitialServerTick,
             PlayerIndex: PlayerIndex.One,
             MoveUpKey: Keys.Q,
             MoveDownKey: Keys.A,
@@ -161,7 +162,7 @@ public class ClientECSManager
         // Server snapshot received
         _remoteWorldStateMessages.Enqueue(new ReceivedWorldStateMessage(
             ClientId: e.ClientId,
-            ServerSequenceId: e.ServerSequenceId,
+            ServerTick: e.ServerTick,
             Position: e.Position
         ));
     }
@@ -189,6 +190,10 @@ public class ClientECSManager
 
         foreach (var system in _systems)
             system.Update(BaseGame.Instance.TargetElapsedTime);
+
+        // How do we feel about this being outside of a system?
+        var simulationState = _world.GetSingleton<SimulationStateComponent>();
+        simulationState.CurrentWorldTick++;
 
         _world.FinishUpdate();
     }

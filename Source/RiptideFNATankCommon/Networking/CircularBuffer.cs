@@ -12,30 +12,45 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 namespace RiptideFNATankCommon.Networking;
 
+/// <summary>
+/// A simple circular buffer.
+/// <para>
+/// Attempts to set values past the end of the array will mod the index so it loops back round to the start of the array.
+/// </para>
+/// </summary>
+/// <example>
+/// Array with 5 elements
+///  0  1  2  3  4 
+/// [ ][ ][ ][ ][ ]
+///                  
+/// Update slot at 'index' 6 to x
+///  0  1  2  3  4 
+/// [ ][x][ ][ ][ ]
+/// </example>
+/// <typeparam name="T">Type of items stored in the buffer. Can be classes, records, structs.</typeparam>
 public class CircularBuffer<T>
 {
-    readonly int _bufferSize;
-    T[] _buffer;
+    readonly uint _bufferSize;
+    readonly T[] _buffer;
 
-    public CircularBuffer(int bufferSize)
+    public CircularBuffer(uint bufferSize)
     {
         _bufferSize = bufferSize;
         _buffer = new T[_bufferSize];
     }
 
-    public void Add(T item, int index)
-    {
-        _buffer[index % _bufferSize] = item;
-    }
-
-    public T Get(int index)
+    public T Get(uint index)
     {
         return _buffer[index % _bufferSize];
     }
 
+    public void Set(T item, uint index)
+    {
+        _buffer[index % _bufferSize] = item;
+    }
+
     public void Clear()
     {
-        //TODO: garbage
-        _buffer = new T[_bufferSize];
+        Array.Clear(_buffer);
     }
 }

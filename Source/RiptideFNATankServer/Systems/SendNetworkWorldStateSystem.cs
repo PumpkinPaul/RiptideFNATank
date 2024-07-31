@@ -31,7 +31,7 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
     /// <summary>
     /// An incrementing number so that messages can be ordered / ack'd.
     /// </summary>
-    public static uint _serverSequenceId; //TODO: hide or move
+    public static uint ServerTick; //TODO: hide or move
 
     readonly Filter _filter;
 
@@ -54,9 +54,9 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
         foreach (var entity in _filter.Entities)
         {
             //Simulate out of order packets
-            var serverSequenceId = RandomHelper.FastRandom.PercentageChance(_networkGameManager.OutOfOrderPacketPercentage) 
-                ? (uint)RandomHelper.FastRandom.Next(0, (int)_serverSequenceId)
-                : _serverSequenceId;
+            var serverTick = RandomHelper.FastRandom.PercentageChance(_networkGameManager.OutOfOrderPacketPercentage) 
+                ? (uint)RandomHelper.FastRandom.Next(0, (int)ServerTick)
+                : ServerTick;
 
             var clientId = _playerEntityMapper.GetClientIdFromEntity(entity);
 
@@ -70,13 +70,13 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             message.AddByte(gameId);
 
             // Snapshot
-            message.AddUInt(serverSequenceId);
+            message.AddUInt(serverTick);
             message.AddVector2(position.Value);
 
             // Send a network packet containing the player's state.
             _networkGameManager.SendMessageToAll(message);
         }
 
-        _serverSequenceId++;
+        ServerTick++;
     }
 }

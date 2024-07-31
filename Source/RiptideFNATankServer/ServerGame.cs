@@ -153,7 +153,7 @@ public class ServerGame : BaseGame
 
         //TODO: probably need some logic here to do map stuff, get spawn points, etc
         var position = _playerSpawnPoints[_playerSpawnPointsIdx];
-        _networkGameManager.SpawnPlayer(e.ClientId, name, position, SendNetworkWorldStateSystem._serverSequenceId);
+        _networkGameManager.SpawnPlayer(e.ClientId, name, position, SendNetworkWorldStateSystem.ServerTick);
 
         _ecsManager.SpawnPlayer(e.ClientId, name, position);
 

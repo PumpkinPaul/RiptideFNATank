@@ -77,26 +77,27 @@ public class ServerECSManager
 
             // ====================================================================================================
             // World Simulation Start
+            // The following systems should be the same between client and server to get a consistent game
 
             new PlayerActionsSystem(_world, isClient: false), //...then process the actions (e.g. do a jump, fire a gun, etc)
 
-            //Turn directions into velocity!
+            // Turn directions into velocity!
             new DirectionalSpeedSystem(_world),
 
-            //Collisions processors
+            // Collisions processors
             new WorldCollisionSystem(_world, /*TODO*/ null, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
             new EntityCollisionSystem(_world, BaseGame.SCREEN_WIDTH),
 
-            //Move the entities in the world
+            // Move the entities in the world
             new MovementSystem(_world),
 
-            //Remove the dead entities
+            // Remove the dead entities
             new DestroyEntitySystem(_world),
 
             // World Simulation End
             // ====================================================================================================
 
-            //...handle sending data to remote clients
+            // Handle sending server world state data to remote clients
             new SendNetworkWorldStateSystem(_world, _networkGameManager, _playerEntityMapper),
         ];
 

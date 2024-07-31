@@ -23,7 +23,7 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct LocalPlayerSpawnMessage(
     ushort ClientId,
-    uint InitialServerSequenceId,
+    uint InitialServerTick,
     PlayerIndex PlayerIndex,
     Keys MoveUpKey,
     Keys MoveDownKey,
@@ -55,9 +55,9 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
             _playerEntityMapper.AddPlayer(message.ClientId, entity);
 
             ref var simulationState = ref GetSingleton<SimulationStateComponent>();
-            simulationState.InitialServerSequenceId = message.InitialServerSequenceId;
+            simulationState.InitialServerTick = message.InitialServerTick;
 
-            Logger.Success($"Player joined server on InitialServerSequenceId: {message.InitialServerSequenceId}. Client tick is {simulationState.CurrentWorldTick}");
+            Logger.Success($"Player joined server on InitialServerTick: {message.InitialServerTick}. Client tick is {simulationState.CurrentWorldTick}");
 
             Set(entity, new PlayerInputComponent(message.PlayerIndex, message.MoveUpKey, message.MoveDownKey));
             Set(entity, new PositionComponent(message.Position));
