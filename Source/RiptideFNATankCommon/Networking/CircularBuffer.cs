@@ -44,9 +44,11 @@ public class CircularBuffer<T>
         return _buffer[index % _bufferSize];
     }
 
-    public void Set(T item, uint index)
+    public uint Set(uint index, T item)
     {
-        _buffer[index % _bufferSize] = item;
+        var idx = index % _bufferSize;
+        _buffer[idx] = item;
+        return idx;
     }
 
     public void Clear()

@@ -11,6 +11,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 */
 
 using MoonTools.ECS;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 
 namespace RiptideFNATankServer.Gameplay.Systems;
@@ -20,7 +21,7 @@ public readonly record struct ClientStateReceivedMessage(
     Entity Entity,
     uint LastReceivedMessageId,
     byte GameId,
-    uint LastReceivedSnapshotId,
+    uint CurrentClientTick,
     ushort ClientPredictionInMilliseconds,
     uint GameFrameNumber,
     byte UserCommandsCount,
@@ -33,10 +34,14 @@ public readonly record struct ClientStateReceivedMessage(
 /// </summary>
 public sealed class ClientStateReceivedSystem : MoonTools.ECS.System
 {
-    Dictionary<ushort, uint> _clientAcks = new();
+    readonly Dictionary<ushort, uint> _clientAcks;
 
-    public ClientStateReceivedSystem(World world) : base(world)
+    public ClientStateReceivedSystem(
+        World world,
+        Dictionary<ushort, uint> clientAcks
+    ) : base(world)
     {
+        _clientAcks = clientAcks;
     }
 
     public override void Update(TimeSpan delta)
@@ -46,10 +51,29 @@ public sealed class ClientStateReceivedSystem : MoonTools.ECS.System
             if (_clientAcks.ContainsKey(message.ClientId) == false)
                 _clientAcks[message.ClientId] = new();
 
-            _clientAcks[message.ClientId] = message.LastReceivedSnapshotId;
+            var lastReceivedClientTick = _clientAcks[message.ClientId];
 
-            ref var playerActions = ref Get<PlayerActionsComponent>(message.Entity);
-            Set(message.Entity, new PlayerActionsComponent(message.MoveUp, message.MoveDown));            
+            // Ensure the new state > the last state received
+            if (message.CurrentClientTick < lastReceivedClientTick)
+            {
+                // Discard packet
+                Logger.Warning($"Received an old packet from client for CurrentClientTick: {message.CurrentClientTick}. Client has already received state for tick: {lastReceivedClientTick}.");
+            }
+            else if (message.CurrentClientTick == lastReceivedClientTick)
+            {
+                // Duplicate packet?
+                Logger.Warning($"Received a duplicate packet from client for CurrentClientTick: {message.CurrentClientTick}.");
+            }
+            else //else if (newState.sequence > lastState.sequence)
+            {
+
+                _clientAcks[message.ClientId] = message.CurrentClientTick;
+
+                ref var playerActions = ref Get<PlayerActionsComponent>(message.Entity);
+                Set(message.Entity, new PlayerActionsComponent(message.MoveUp, message.MoveDown));
+
+                Logger.Info($"Got inputs from client for CurrentClientTick: {message.CurrentClientTick}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
+            }
         }
     }
 }

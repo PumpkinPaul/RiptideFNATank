@@ -32,7 +32,6 @@ namespace RiptideFNATankServer.Gameplay;
 /// </summary>
 public class ServerECSManager
 {
-    readonly Timekeeper _timekeeper = new();
     readonly World _world;
 
     //Systems
@@ -54,6 +53,7 @@ public class ServerECSManager
     // Master gamestate
     // Player snapshots
     // Dummy gamestate
+    readonly Dictionary<ushort, uint> _clientAcks = [];
 
     public ServerECSManager(
         ServerNetworkManager networkGameManager,
@@ -70,7 +70,7 @@ public class ServerECSManager
         _systems = [
             // State from client
             // TODO: how to update the master state!
-            new ClientStateReceivedSystem(_world),
+            new ClientStateReceivedSystem(_world, _clientAcks),
 
             //Spawn the entities into the game world
             new PlayerSpawnSystem(_world, _playerEntityMapper),
@@ -85,8 +85,8 @@ public class ServerECSManager
             new DirectionalSpeedSystem(_world),
 
             // Collisions processors
-            new WorldCollisionSystem(_world, /*TODO*/ null, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
-            new EntityCollisionSystem(_world, BaseGame.SCREEN_WIDTH),
+            new WorldCollisionSystem(_world, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
+            new EntityCollisionSystem(_world),
 
             // Move the entities in the world
             new MovementSystem(_world),
@@ -98,7 +98,7 @@ public class ServerECSManager
             // ====================================================================================================
 
             // Handle sending server world state data to remote clients
-            new SendNetworkWorldStateSystem(_world, _networkGameManager, _playerEntityMapper),
+            new SendNetworkWorldStateSystem(_world, _networkGameManager, _playerEntityMapper, _clientAcks),
         ];
 
         _spriteRenderer = new SpriteRenderer(_world, spriteBatch);
@@ -121,8 +121,6 @@ public class ServerECSManager
 
     public void Update(GameTime gameTime)
     {
-        _timekeeper.GameTime = gameTime;
-
         SendAllQueuedECSMessages();
 
         foreach (var system in _systems)
@@ -181,11 +179,11 @@ public class ServerECSManager
         // Header
         var lastReceivedMessageId = e.Message.GetUInt();
         var gameId = e.Message.GetByte();
-        var lastReceivedSnapshotId = e.Message.GetUInt();
+        var lastReceivedServerTick = e.Message.GetUInt();
 
         // Payload
         var clientPredictionInMilliseconds = e.Message.GetUShort();
-        var gameFrameNumber = e.Message.GetUInt();
+        var currentClientTick = e.Message.GetUInt();
         var userCommandsCount = e.Message.GetByte();
         var moveUp = e.Message.GetBool();
         var moveDown = e.Message.GetBool();
@@ -198,9 +196,9 @@ public class ServerECSManager
             entity,
             lastReceivedMessageId,
             gameId,
-            lastReceivedSnapshotId,
+            lastReceivedServerTick,
             clientPredictionInMilliseconds,
-            gameFrameNumber,
+            currentClientTick,
             userCommandsCount,
             moveUp,
             moveDown

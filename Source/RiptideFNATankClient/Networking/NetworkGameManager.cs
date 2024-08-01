@@ -30,6 +30,7 @@ public record ReceivedSpawnPlayerEventArgs(
 public record ReceivedWorldStateEventArgs(
     ushort ClientId,
     uint ServerTick,
+    uint ClientTick,
     Vector2 Position
 );
 
@@ -47,12 +48,12 @@ public class NetworkGameManager
     /// <summary>
     /// A value between 0 (no dropped packets) and 100 (all dropped packets)
     /// </summary>
-    public int DroppedPacketPercentage { get; set; } = 10;
+    public int DroppedPacketPercentage { get; set; } = 0;
 
     /// <summary>
     /// TODO: Simulates lag
     /// </summary>
-    public float LagDelayInSeconds { get; set; } = 0;
+    public float LagDelayInSeconds { get; set; } = 10;
 
     public event Action LocalClientConnected;
     public event Action ConnectionFailed;
@@ -220,9 +221,10 @@ public class NetworkGameManager
 
         // Snapshot
         var serverSequeceId = message.GetUInt();
+        var clientTick = message.GetUInt();
         var position = message.GetVector2();
 
-        ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(clientId, serverSequeceId, position));
+        ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(clientId, serverSequeceId, clientTick, position));
     }
 
     void RemovePlayer(ushort clientId)

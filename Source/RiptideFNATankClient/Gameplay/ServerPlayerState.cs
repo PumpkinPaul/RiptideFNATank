@@ -15,13 +15,9 @@ using Microsoft.Xna.Framework;
 namespace RiptideFNATankClient.Gameplay;
 
 /// <summary>
-/// Predicted state for the local player.
-/// <para>
-/// Cached at the end of the simulation phase based on the local player's actions and the result of the simulation step.
-/// It is predicted, and as the server is authoritative, it may well get overwritten by the real worlds state from the server
-/// </para>
+/// Actual state for the LOCAL player from the server.
 /// </summary>
-//TODO: this might be the same as the server state!
-public record struct LocalPlayerPredictedState(
+//TODO: this might be the same as the client state! and indeed the remote players might use this structure too.
+public record struct ServerPlayerState(
     Vector2 Position
 );

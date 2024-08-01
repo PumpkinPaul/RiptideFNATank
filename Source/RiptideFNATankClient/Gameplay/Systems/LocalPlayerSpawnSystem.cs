@@ -57,7 +57,12 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
             ref var simulationState = ref GetSingleton<SimulationStateComponent>();
             simulationState.InitialServerTick = message.InitialServerTick;
 
-            Logger.Success($"Player joined server on InitialServerTick: {message.InitialServerTick}. Client tick is {simulationState.CurrentWorldTick}");
+            //TODO: We are force reseting the client world tick here to match the server tick.
+            // This may or may not be a good idea
+            Logger.Success($"Player joined server on InitialServerTick: {message.InitialServerTick}. Client tick was {simulationState.CurrentClientTick}");
+            Logger.Debug($"Reseting CurrentClientTick to match InitialServerTick");
+
+            simulationState.CurrentClientTick = message.InitialServerTick;
 
             Set(entity, new PlayerInputComponent(message.PlayerIndex, message.MoveUpKey, message.MoveDownKey));
             Set(entity, new PositionComponent(message.Position));

@@ -12,6 +12,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 using System;
@@ -21,20 +22,20 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 /// <summary>
 /// Caches player state in the snaphot buffer.
 /// </summary>
-public sealed class SnapshotPlayerStateSystem : MoonTools.ECS.System
+public sealed class SnapshotLocalPlayerPredictedStateSystem : MoonTools.ECS.System
 {
     readonly CircularBuffer<LocalPlayerPredictedState> _localPlayerStateSnapshots;
 
     readonly Filter _filter;
 
-    public SnapshotPlayerStateSystem(
+    public SnapshotLocalPlayerPredictedStateSystem(
         World world,
         CircularBuffer<LocalPlayerPredictedState> localPlayerStateSnapshots
     ) : base(world)
     {
         _localPlayerStateSnapshots = localPlayerStateSnapshots;
 
-        _filter = FilterBuilder
+        _filter = FilterBuilder 
             .Include<PlayerInputComponent>()
             .Include<PositionComponent>()
             .Build();
@@ -51,7 +52,8 @@ public sealed class SnapshotPlayerStateSystem : MoonTools.ECS.System
             var localPlayerState = new LocalPlayerPredictedState(
                 position.Value);
 
-            _localPlayerStateSnapshots.Set(localPlayerState, simulationState.CurrentWorldTick);
+            var idx = _localPlayerStateSnapshots.Set(simulationState.CurrentClientTick, localPlayerState);
+            Logger.Info($"Wrote local player state CurrentClientTick: {simulationState.CurrentClientTick}, resolves to idx: {idx}, LastReceivedServerTick: {simulationState.LastReceivedServerTick}, Position: {localPlayerState.Position}");
         }
     }
 }

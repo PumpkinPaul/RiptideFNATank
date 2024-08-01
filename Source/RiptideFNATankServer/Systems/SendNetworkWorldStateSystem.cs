@@ -12,6 +12,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
 using Riptide;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
@@ -33,16 +34,20 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
     /// </summary>
     public static uint ServerTick; //TODO: hide or move
 
+    readonly Dictionary<ushort, uint> _clientAcks;
+
     readonly Filter _filter;
 
     public SendNetworkWorldStateSystem(
         World world,
         ServerNetworkManager networkGameManager,
-        PlayerEntityMapper playerEntityMapper
+        PlayerEntityMapper playerEntityMapper,
+        Dictionary<ushort, uint> clientAcks
     ) : base(world)
     {
         _networkGameManager = networkGameManager;
         _playerEntityMapper = playerEntityMapper;
+        _clientAcks = clientAcks;
 
         _filter = FilterBuilder
             .Include<PositionComponent>()
@@ -59,6 +64,7 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
                 : ServerTick;
 
             var clientId = _playerEntityMapper.GetClientIdFromEntity(entity);
+            _clientAcks.TryGetValue(clientId, out var clientTick);
 
             ref readonly var position = ref Get<PositionComponent>(entity);
 
@@ -71,10 +77,13 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
 
             // Snapshot
             message.AddUInt(serverTick);
+            message.AddUInt(clientTick);
             message.AddVector2(position.Value);
 
             // Send a network packet containing the player's state.
             _networkGameManager.SendMessageToAll(message);
+
+            Logger.Info($"Sending state to client for serverTick: {serverTick}, clientTick: {clientTick}, position: {position.Value}");
         }
 
         ServerTick++;

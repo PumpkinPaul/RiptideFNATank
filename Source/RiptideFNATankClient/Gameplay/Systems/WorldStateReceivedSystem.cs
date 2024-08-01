@@ -15,26 +15,23 @@ using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
-using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using System;
-using System.Collections.Generic;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct ReceivedWorldStateMessage(
     ushort ClientId,
     uint ServerTick,
+    uint ClientTick,
     Vector2 Position
 );
 
 public record struct SimulationStateComponent(
-    //TODO: this is the tick on the server when the client joined
-    // Wondering if we should start the client tick (CurrentWorldTick) at this value so the the worlds are in sync.
-    // This might make reconciliation easier.
     uint InitialServerTick,
     uint LastReceivedServerTick,
-    uint CurrentWorldTick
+    uint CurrentClientTick,
+    uint ServerProcessedClientInputAtClientTick
 );
 
 /// <summary>
@@ -45,32 +42,36 @@ public record struct SimulationStateComponent(
 /// </summary>
 public class WorldStateReceivedSystem : MoonTools.ECS.System
 {
-    WorldState _masterWorldState = new();
-    readonly Queue<WorldState> _worldStates;
-
     readonly PlayerEntityMapper _playerEntityMapper;
+    readonly CircularBuffer<ServerPlayerState> _serverPlayerStateSnapshots;
 
     public WorldStateReceivedSystem(
         World world,
-        Queue<WorldState> worldStates,
-        PlayerEntityMapper playerEntityMapper
+        PlayerEntityMapper playerEntityMapper,
+        CircularBuffer<ServerPlayerState> serverPlayerStateSnapshots
     ) : base(world)
     {
-        _worldStates = worldStates;
         _playerEntityMapper = playerEntityMapper;
+        _serverPlayerStateSnapshots = serverPlayerStateSnapshots;
     }
 
     public override void Update(TimeSpan delta)
     {
         //TODO: I think we need to buffer these to avoid jitter.
-        foreach (var message in ReadMessages<ReceivedWorldStateMessage>())
+        var span = ReadMessages<ReceivedWorldStateMessage>();
+        if (span.Length > 1)
+        {
+            Logger.Warning($"Received multiple server messages");
+        }
+
+        ref var simulationState = ref GetSingleton<SimulationStateComponent>();
+
+        foreach (var message in span)
         {
             var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
             if (entity == PlayerEntityMapper.INVALID_ENTITY)
                 continue;
-
-            ref var simulationState = ref GetSingleton<SimulationStateComponent>();
 
             if (Has<PlayerInputComponent>(entity))
             {
@@ -102,6 +103,16 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
                     //}
 
                     simulationState.LastReceivedServerTick = message.ServerTick;
+                    simulationState.ServerProcessedClientInputAtClientTick = message.ClientTick;
+
+                    if (simulationState.ServerProcessedClientInputAtClientTick > 0)
+                    {
+
+                        var serverPlayerState = new ServerPlayerState(message.Position);
+                        var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerProcessedClientInputAtClientTick, serverPlayerState);
+
+                        Logger.Info($"Wrote server state snpshot for ServerProcessedClientInputAtClientTick: {simulationState.ServerProcessedClientInputAtClientTick}, resolves to idx: {idx}, CurrentClientTick: {simulationState.CurrentClientTick}, Position: {serverPlayerState.Position}");
+                    }
                 }
 
                 continue;

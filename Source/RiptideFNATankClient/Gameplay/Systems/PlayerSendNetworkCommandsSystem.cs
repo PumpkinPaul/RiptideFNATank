@@ -14,6 +14,7 @@ using MoonTools.ECS;
 using Riptide;
 using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankClient.Networking;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 using System;
@@ -27,28 +28,20 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
 {
     readonly NetworkGameManager _networkGameManager;
-    readonly Timekeeper _timekeeper;
 
     // How often to send the player's state across the network
     public const int UPDATES_PER_SECOND = 60;
     private const float STATE_FREQUENCY = 1.0f / UPDATES_PER_SECOND;
     float _stateSyncTimer;
 
-    /// <summary>
-    /// An incrementing number so that messages can be ordered / ack'd.
-    /// </summary>
-    uint _sequenceId;
-
     readonly Filter _filter;
 
     public PlayerSendNetworkCommandsSystem(
         World world,
-        NetworkGameManager networkGameManager,
-        Timekeeper timekeeper
+        NetworkGameManager networkGameManager
     ) : base(world)
     {
         _networkGameManager = networkGameManager;
-        _timekeeper = timekeeper;
 
         _filter = FilterBuilder
             .Include<PlayerActionsComponent>()
@@ -61,7 +54,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
         //if (_stateSyncTimer <= 0)
         {
 
-            ref readonly var worldState = ref GetSingleton<SimulationStateComponent>();
+            ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
 
             foreach (var entity in _filter.Entities)
             {
@@ -76,11 +69,11 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
                 message.AddUInt(0); //TODO: sequence number of last received server message
                 byte gameId = 0;
                 message.AddByte(gameId);
-                message.AddUInt(worldState.LastReceivedServerTick);
+                message.AddUInt(simulationState.LastReceivedServerTick);
 
                 // Payload
                 message.AddUShort(0); //TODO: Client prediction in milliseconds
-                message.AddUInt(worldState.CurrentWorldTick);
+                message.AddUInt(simulationState.CurrentClientTick);
                 message.AddByte(1); //TODO: number of user commands
 
                 // Add user commands.
@@ -89,10 +82,11 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
 
                 // Send a network packet containing the player's state.
                 _networkGameManager.SendMessage(message);
+
+                Logger.Info($"Sending state to server for simulationState.CurrentClientTick: {simulationState.CurrentClientTick}, playerActions.MoveUp: {playerActions.MoveUp}, position: {playerActions.MoveDown}");
             }
 
             //_stateSyncTimer = STATE_FREQUENCY;
-            _sequenceId++;
         }
 
         _stateSyncTimer -= (float)delta.TotalSeconds;

@@ -26,17 +26,14 @@ namespace RiptideFNATankCommon.Systems;
 /// </remarks>
 public sealed class WorldCollisionSystem : MoonTools.ECS.System
 {
-    readonly Queue<WorldState> _worldStates;
     Point _worldSize;
     readonly Filter _filter;
 
     public WorldCollisionSystem(
         World world,
-        Queue<WorldState> worldStates,
         Point worldSize
     ) : base(world)
     {
-        _worldStates = worldStates;
         _worldSize = worldSize;
 
         _filter = FilterBuilder

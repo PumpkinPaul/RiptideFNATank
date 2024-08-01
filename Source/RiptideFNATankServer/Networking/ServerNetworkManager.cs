@@ -29,7 +29,7 @@ public class ServerNetworkManager
     /// <summary>
     /// A value between 0 (no out of order packets) and 100 (all packets out of order)
     /// </summary>
-    public int OutOfOrderPacketPercentage { get; set; } = 1;
+    public int OutOfOrderPacketPercentage { get; set; } = 0;
 
     public readonly record struct ClientConnectedArgs(
         ushort ClientId, 

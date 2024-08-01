@@ -64,7 +64,7 @@ public sealed class PlayerInputSystem : MoonTools.ECS.System
             // Cache the action...
             // ...so that we have a store of inputs we can send to the server to protect against packet loss
             // ...a stream of actions that we can use to replay client inputs when reconciling state updates (server disagress with predicted client state)
-            _playerActions.Set(playerActionsThisFrame, simulationState.CurrentWorldTick);
+            _playerActions.Set(simulationState.CurrentClientTick, playerActionsThisFrame);
         }
     }
 }

@@ -23,18 +23,14 @@ namespace RiptideFNATankCommon.Systems;
 /// </summary>
 public sealed class EntityCollisionSystem : MoonTools.ECS.System
 {
-    readonly int _screenWidth;
-
     readonly HashSet<(Entity, Entity)> _potentialPairs = new();
     readonly List<(Entity, Entity, float Time)> _actualColliders = new();
 
     readonly Filter _filter;
 
     public EntityCollisionSystem(
-        World world,
-        int screenWidth) : base(world)
+        World world) : base(world)
     {
-        _screenWidth = screenWidth;
 
         _filter = FilterBuilder
             .Include<PositionComponent>()
@@ -97,8 +93,6 @@ public sealed class EntityCollisionSystem : MoonTools.ECS.System
 
     void ProcessCollisions()
     {
-        var centreX = _screenWidth / 2;
-
         for (var i = 0; i < _actualColliders.Count; i++)
         {
             var (entity1, entity2, collisionTime) = _actualColliders[i];

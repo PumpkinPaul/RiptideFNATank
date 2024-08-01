@@ -31,7 +31,6 @@ namespace RiptideFNATankClient.Gameplay;
 /// </summary>
 public class ClientECSManager
 {
-    readonly Timekeeper _timekeeper = new();
     readonly NetworkOptions _networkOptions;
     readonly World _world;
 
@@ -54,7 +53,7 @@ public class ClientECSManager
     readonly CircularBuffer<LocalPlayerPredictedState> _localPlayerStateSnapshots = new (1024);
 
     // Authoritative state received from the server 
-    readonly CircularBuffer<PlayerState> _serverStateBuffer = new(1024);
+    readonly CircularBuffer<ServerPlayerState> _serverPlayerStateSnapshots = new(1024);
 
     // Queue for incoming world states.
     readonly Queue<WorldState> _worldStateQueue = new();
@@ -64,9 +63,6 @@ public class ClientECSManager
     readonly Queue<RemotePlayerSpawnMessage> _remotePlayerSpawnMessages = new();
     readonly Queue<ReceivedWorldStateMessage> _remoteWorldStateMessages = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
-
-    // Netcode
-    readonly NetworkTimer _networkTimer = new(serverTickRateInFPS: NetworkSettings.SERVER_FPS);
     
     public ClientECSManager(
         NetworkGameManager networkGameManager,
@@ -75,57 +71,60 @@ public class ClientECSManager
         _networkGameManager = networkGameManager;
         _playerEntityMapper = playerEntityMapper;
 
-        _world = new World();
-
-        // Add a single for common simulation state
-        // e.g.
-        // Current simulation tick
-        // Last received server sequence
-        // etc
-        _world.Set(_world.CreateEntity(), new SimulationStateComponent());
-
         _networkOptions = new NetworkOptions
         {
             EnablePrediction = false,
             EnableSmoothing = true
         };
 
-        _systems = [
-            new WorldStateReceivedSystem(_world, _worldStateQueue,  _playerEntityMapper),
+        _world = new World();
 
-            // Spawn the entities into the game world
+        // Add a singleton (I think) for common simulation state.
+        // e.g.
+        // Current simulation tick
+        // Last received server tick
+        // etc
+        _world.Set(_world.CreateEntity(), new SimulationStateComponent());
+
+        _systems = [
+            new WorldStateReceivedSystem(_world, _playerEntityMapper, _serverPlayerStateSnapshots),
+            new ReconcilePredictedStateSystem(_world, _localPlayerActionsSnapshots, _localPlayerStateSnapshots, _serverPlayerStateSnapshots),
+
+            // Spawn the entities into the game world.
             new LocalPlayerSpawnSystem(_world, _playerEntityMapper),
             new RemotePlayerSpawnSystem(_world, _playerEntityMapper),
 
-            new PlayerInputSystem(_world, _localPlayerActionsSnapshots),   //Get input from devices and turn into game actions...            
+            // Get input from devices and turn into game actions.
+            new PlayerInputSystem(_world, _localPlayerActionsSnapshots),
             
-            // Handle sending player commands to the server - do this as soon as we have them.
-            new PlayerSendNetworkCommandsSystem(_world, _networkGameManager, _timekeeper),
-
             // ====================================================================================================
             // World Simulation Start
-            // The following systems should be the same between client and server to get a consistent game
+            // The following systems should be the same between client and server to get a consistent game.
 
-            new PlayerActionsSystem(_world, isClient: true), //...then process the actions (e.g. do a jump, fire a gun, etc)
+            // Process the actions (e.g. do a jump, fire a gun, move forward, etc).
+            new PlayerActionsSystem(_world, isClient: true),
 
             // Turn directions into velocity!
             new DirectionalSpeedSystem(_world),
 
-            // Collisions processors
-            new WorldCollisionSystem(_world, _worldStateQueue, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
-            new EntityCollisionSystem(_world, BaseGame.SCREEN_WIDTH),
+            // Collisions processors.
+            new WorldCollisionSystem(_world, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
+            new EntityCollisionSystem(_world),
 
-            // Move the entities in the world
+            // Move the entities in the world.
             new MovementSystem(_world),
 
-            // Remove the dead entities
+            // Remove the dead entities.
             new DestroyEntitySystem(_world),
 
             // World Simulation End
             // ====================================================================================================
 
-            // Cache the player state (for the local player) - used for server state reconciliation
-            new SnapshotPlayerStateSystem(_world, _localPlayerStateSnapshots),
+            // Cache the player state (for the local player) - used for server state reconciliation.
+            new SnapshotLocalPlayerPredictedStateSystem(_world, _localPlayerStateSnapshots),
+
+            // Send player game actions to the server - do this after writing the predication snapshot!
+            new PlayerSendNetworkCommandsSystem(_world, _networkGameManager),
 
             new LerpPositionSystem(_world),
         ];
@@ -163,6 +162,7 @@ public class ClientECSManager
         _remoteWorldStateMessages.Enqueue(new ReceivedWorldStateMessage(
             ClientId: e.ClientId,
             ServerTick: e.ServerTick,
+            ClientTick: e.ClientTick,
             Position: e.Position
         ));
     }
@@ -184,16 +184,14 @@ public class ClientECSManager
 
     public void Update(GameTime gameTime)
     {
-        _timekeeper.GameTime = gameTime;
-
         SendAllQueuedMessages();
 
         foreach (var system in _systems)
             system.Update(BaseGame.Instance.TargetElapsedTime);
 
         // How do we feel about this being outside of a system?
-        var simulationState = _world.GetSingleton<SimulationStateComponent>();
-        simulationState.CurrentWorldTick++;
+        ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
+        simulationState.CurrentClientTick++;
 
         _world.FinishUpdate();
     }
