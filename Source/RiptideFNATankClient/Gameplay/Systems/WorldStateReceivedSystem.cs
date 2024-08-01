@@ -12,6 +12,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
+using Riptide;
 using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
@@ -68,54 +69,29 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
         foreach (var message in span)
         {
+            if (IsValidPacket(message.ServerTick, simulationState.LastReceivedServerTick))
+                continue;
+
             var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
             if (entity == PlayerEntityMapper.INVALID_ENTITY)
                 continue;
+            
+            //Logger.Info($"Received a new packet from server for sequence: {message.ServerTick}.");
 
             if (Has<PlayerInputComponent>(entity))
             {
-                // Local player
-                // Ensure the new state > the last state received
-                if (message.ServerTick < simulationState.LastReceivedServerTick)
+                simulationState.LastReceivedServerTick = message.ServerTick;
+                simulationState.ServerProcessedClientInputAtClientTick = message.ClientTick;
+
+                if (simulationState.ServerProcessedClientInputAtClientTick > 0)
                 {
-                    // Discard packet
-                    Logger.Warning($"Received an old packet from server for sequence: {message.ServerTick}. Client has already received state for sequence: {simulationState.LastReceivedServerTick}.");
+
+                    var serverPlayerState = new ServerPlayerState(message.Position);
+                    var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerProcessedClientInputAtClientTick, serverPlayerState);
+
+                    Logger.Info($"Wrote server state snpshot for ServerProcessedClientInputAtClientTick: {simulationState.ServerProcessedClientInputAtClientTick}, resolves to idx: {idx}, CurrentClientTick: {simulationState.CurrentClientTick}, Position: {serverPlayerState.Position}");
                 }
-                else if (message.ServerTick == simulationState.LastReceivedServerTick)
-                {
-                    // Duplicate packet?
-                    Logger.Warning($"Received a duplicate packet from server for sequence: {message.ServerTick}.");
-                }
-                else //else if (newState.sequence > lastState.sequence)
-                {
-                    //Logger.Info($"Received a new packet from server for sequence: {message.ServerTick}.");
-
-                    //_masterWorldState = new WorldState
-                    //{
-                    //    WorldTick = message.ServerTick
-                    //};
-
-                    //if (_masterWorldState.PlayerStates.TryGetValue(message.ClientId, out var lastPlayerState) == false)
-                    //{
-                    //    lastPlayerState = new();
-                    //    _masterWorldState.PlayerStates[message.ClientId] = lastPlayerState;
-                    //}
-
-                    simulationState.LastReceivedServerTick = message.ServerTick;
-                    simulationState.ServerProcessedClientInputAtClientTick = message.ClientTick;
-
-                    if (simulationState.ServerProcessedClientInputAtClientTick > 0)
-                    {
-
-                        var serverPlayerState = new ServerPlayerState(message.Position);
-                        var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerProcessedClientInputAtClientTick, serverPlayerState);
-
-                        Logger.Info($"Wrote server state snpshot for ServerProcessedClientInputAtClientTick: {simulationState.ServerProcessedClientInputAtClientTick}, resolves to idx: {idx}, CurrentClientTick: {simulationState.CurrentClientTick}, Position: {serverPlayerState.Position}");
-                    }
-                }
-
-                continue;
             }
             else
             {
@@ -127,5 +103,32 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Checks to see if the packet just received is valid.
+    /// <para>
+    /// Due to the way UDP works, it could be old, duplicated, etc
+    /// </para>
+    /// </summary>
+    /// <param name="justReceivedServerTick">The tick on the server this packet is for.</param>
+    /// <param name="lastReceivedServerTick">The tick of the most recent packet received by us (the client).</param>
+    /// <returns></returns>
+    static bool IsValidPacket(uint justReceivedServerTick, uint lastReceivedServerTick)
+    {
+        if (justReceivedServerTick < lastReceivedServerTick)
+        {
+            // Discard packet
+            Logger.Warning($"Received an old packet from server for sequence: {justReceivedServerTick}. Client has already received state for sequence: {lastReceivedServerTick}.");
+            return false;
+        }
+        else if (justReceivedServerTick == lastReceivedServerTick)
+        {
+            // Duplicate packet?
+            Logger.Warning($"Received a duplicate packet from server for sequence: {justReceivedServerTick}.");
+            return false;
+        }
+
+        return true;
     }
 }

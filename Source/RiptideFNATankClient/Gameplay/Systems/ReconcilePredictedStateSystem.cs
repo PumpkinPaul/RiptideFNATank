@@ -55,13 +55,12 @@ public sealed class ReconcilePredictedStateSystem : MoonTools.ECS.System
 
         foreach (var entity in _filter.Entities)
         {
-            // Note - currently client and server tick clocks are sync'd
             var predictedState = _localPlayerStateSnapshots.Get(simulationState.ServerProcessedClientInputAtClientTick);
             var serverState = _serverPlayerStateSnapshots.Get(simulationState.ServerProcessedClientInputAtClientTick);
 
             if (predictedState.Position != serverState.Position)
             {
-                // Reconcile and replay the local input
+                //TODO: Reconcile and replay the local input
                 Logger.Error($"Local client prediction error at ServerProcessedClientInputAtClientTick: {simulationState.ServerProcessedClientInputAtClientTick}");
                 Logger.Warning($"Predicted position: {predictedState.Position} vs actual position: {serverState.Position}");
             }

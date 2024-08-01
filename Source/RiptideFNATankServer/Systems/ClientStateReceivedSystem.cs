@@ -21,9 +21,9 @@ public readonly record struct ClientStateReceivedMessage(
     Entity Entity,
     uint LastReceivedMessageId,
     byte GameId,
-    uint CurrentClientTick,
+    uint lastReceivedServerTick,
     ushort ClientPredictionInMilliseconds,
-    uint GameFrameNumber,
+    uint CurrentClientTick,
     byte UserCommandsCount,
     bool MoveUp,
     bool MoveDown
