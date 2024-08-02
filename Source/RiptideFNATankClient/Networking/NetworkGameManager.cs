@@ -15,6 +15,7 @@ using Riptide;
 using Riptide.Utils;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Extensions;
+using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using System;
 using System.Collections.Generic;
@@ -222,9 +223,21 @@ public class NetworkGameManager
         // Snapshot
         var serverSequeceId = message.GetUInt();
         var clientTick = message.GetUInt();
-        var position = message.GetVector2();
 
-        ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(clientId, serverSequeceId, clientTick, position));
+        // Number of players
+        var playerCount = message.GetByte();
+
+        // All players
+        // - the 'local' player (this client)
+        // - all the other remote players
+        for (var i = 0; i < playerCount; i++)
+        {
+            var playerId = message.GetUShort();
+            var position = message.GetVector2();
+
+            //TODO: handle remote player disconnections here.
+            ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(playerId, serverSequeceId, clientTick, position));
+        }
     }
 
     void RemovePlayer(ushort clientId)

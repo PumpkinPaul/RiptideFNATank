@@ -13,8 +13,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
-using Riptide;
-using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankCommon.Systems;
@@ -26,6 +24,10 @@ using Wombat.Engine.Extensions;
 using static RiptideFNATankServer.Networking.ServerNetworkManager;
 
 namespace RiptideFNATankServer.Gameplay;
+
+public record struct SimulationStateComponent(
+    uint CurrentServerTick
+);
 
 /// <summary>
 /// Encapsulates management of the ECS
@@ -66,6 +68,13 @@ public class ServerECSManager
         _spriteBatch = spriteBatch;
 
         _world = new World();
+
+        // Add a singleton (I think) for common simulation state.
+        // e.g.
+        // Current simulation tick
+        // Last received server tick
+        // etc
+        _world.Set(_world.CreateEntity(), new SimulationStateComponent());
 
         _systems = [
             // State from client
@@ -125,6 +134,12 @@ public class ServerECSManager
 
         foreach (var system in _systems)
             system.Update(gameTime.ElapsedGameTime);
+
+        // How do we feel about this being outside of a system?
+        ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
+        simulationState.CurrentServerTick++;
+
+        ServerGame.ServerTick = simulationState.CurrentServerTick++;
 
         _world.FinishUpdate();
     }

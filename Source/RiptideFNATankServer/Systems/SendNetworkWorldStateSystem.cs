@@ -10,11 +10,13 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using Riptide;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Extensions;
+using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
@@ -28,15 +30,11 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
 {
     readonly ServerNetworkManager _networkGameManager;
     readonly PlayerEntityMapper _playerEntityMapper;
-
-    /// <summary>
-    /// An incrementing number so that messages can be ordered / ack'd.
-    /// </summary>
-    public static uint ServerTick; //TODO: hide or move
-
     readonly Dictionary<ushort, uint> _clientAcks;
 
     readonly Filter _filter;
+
+    readonly Dictionary<ushort, Vector2> _worldState = [];
 
     public SendNetworkWorldStateSystem(
         World world,
@@ -56,17 +54,27 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
 
     public override void Update(TimeSpan delta)
     {
+        ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
+
+        // Prepare the world state!
         foreach (var entity in _filter.Entities)
         {
-            //Simulate out of order packets
-            var serverTick = RandomHelper.FastRandom.PercentageChance(_networkGameManager.OutOfOrderPacketPercentage) 
-                ? (uint)RandomHelper.FastRandom.Next(0, (int)ServerTick)
-                : ServerTick;
-
             var clientId = _playerEntityMapper.GetClientIdFromEntity(entity);
-            _clientAcks.TryGetValue(clientId, out var clientTick);
-
+            
             ref readonly var position = ref Get<PositionComponent>(entity);
+            _worldState[clientId] = position.Value;
+        }
+
+        // Send the world State
+        foreach(var client in _worldState)
+        {
+            //Simulate out of order packets
+            var serverTick = RandomHelper.FastRandom.PercentageChance(_networkGameManager.OutOfOrderPacketPercentage)
+                ? (uint)RandomHelper.FastRandom.Next(0, (int)simulationState.CurrentServerTick)
+                : simulationState.CurrentServerTick;
+
+            var clientId = client.Key;
+            _clientAcks.TryGetValue(clientId, out var clientTick);
 
             var message = Message.Create(MessageSendMode.Unreliable, ServerMessageType.SendWorldState);
 
@@ -78,14 +86,22 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             // Snapshot
             message.AddUInt(serverTick);
             message.AddUInt(clientTick);
-            message.AddVector2(position.Value);
 
-            // Send a network packet containing the player's state.
-            _networkGameManager.SendMessageToAll(message);
+            // Number of players
+            message.AddByte((byte)_worldState.Count);
 
-            Logger.Info($"Sending state to client for serverTick: {serverTick}, clientTick: {clientTick}, position: {position.Value}");
+            // All players
+            // - the 'local' player (when the client gets the message)
+            // - al the other remote players
+            foreach (var player in _worldState)
+            {
+                var position = _worldState[player.Key];
+                message.AddUShort(player.Key);
+                message.AddVector2(position);
+            }
+
+            // Send a network packet containing all the world state to a single player
+            _networkGameManager.SendMessage(message, clientId);
         }
-
-        ServerTick++;
     }
 }

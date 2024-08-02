@@ -48,6 +48,9 @@ public class ServerGame : BaseGame
 
     int _playerSpawnPointsIdx = 0;
 
+    //HACK
+    public static uint ServerTick;
+
     //
     SpriteBatch _spriteBatch;
 
@@ -151,9 +154,8 @@ public class ServerGame : BaseGame
         Logger.Debug($"{name}");
 #endif
 
-        //TODO: probably need some logic here to do map stuff, get spawn points, etc
         var position = _playerSpawnPoints[_playerSpawnPointsIdx];
-        _networkGameManager.SpawnPlayer(e.ClientId, name, position, SendNetworkWorldStateSystem.ServerTick);
+        _networkGameManager.SpawnPlayer(e.ClientId, name, position, ServerTick);
 
         _ecsManager.SpawnPlayer(e.ClientId, name, position);
 

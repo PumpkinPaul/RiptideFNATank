@@ -111,6 +111,11 @@ public class ServerNetworkManager
 
     #region Send server messages to client
 
+    public void SendMessage(Message message, ushort clientId)
+    {
+        Server.Send(message, clientId);
+    }
+
     public void SendMessageToAll(Message message)
     {
         Server.SendToAll(message);

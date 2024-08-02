@@ -69,15 +69,15 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
         foreach (var message in span)
         {
-            if (IsValidPacket(message.ServerTick, simulationState.LastReceivedServerTick))
+            if (IsValidPacket(message.ServerTick, simulationState.LastReceivedServerTick) == false)
                 continue;
+
+            //Logger.Info($"Received a valid packet from server for sequence: {message.ServerTick}.");
 
             var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
             if (entity == PlayerEntityMapper.INVALID_ENTITY)
                 continue;
-            
-            //Logger.Info($"Received a new packet from server for sequence: {message.ServerTick}.");
 
             if (Has<PlayerInputComponent>(entity))
             {
@@ -122,7 +122,8 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
             Logger.Warning($"Received an old packet from server for sequence: {justReceivedServerTick}. Client has already received state for sequence: {lastReceivedServerTick}.");
             return false;
         }
-        else if (justReceivedServerTick == lastReceivedServerTick)
+        //HACK: Remove this when the server creates the state proper!
+        else if (false && justReceivedServerTick == lastReceivedServerTick)
         {
             // Duplicate packet?
             Logger.Warning($"Received a duplicate packet from server for sequence: {justReceivedServerTick}.");
