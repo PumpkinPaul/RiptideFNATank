@@ -1,12 +1,12 @@
 # Riptide FNA Tank
-An FNA Game using networked client / server multiplayer.
+An FNA Game featuring a networked client / server multiplayer model using the Riptide network library.
 
 ## Overview
 
 A short demo project of the Atari classic, Tank - highlighting three core concepts:
 - A simple 2d game based on the **FNA Framework** low level game library - no Unity or Godot here.
-- A **pure** ECS for the world / entity management
-- A **client / server** networked multiplayer element
+- A **pure** ECS for the world / entity management.
+- A **client / server** networked multiplayer element.
 
 ### ECS 
 
@@ -19,22 +19,28 @@ A short demo project of the Atari classic, Tank - highlighting three core concep
 It could be considered a 'Pure' ECS:
 - **E**ntity - Nothing more than a number - acts as an 'indexer' into the various component collections.
 - **C**omponent - Data, no behaviour - components in MoonTools.ECS are limited to unmanaged values types only, no class references are allowed here.
-- **S**ystem - Functions that operate on entities that conform to a certain set of components
+- **S**ystem - Functions that operate on entities that conform to a certain set of components.
   
   > e.g. A system to move entities in the world could query for entities with both Position and Velocity components.
 
 ### Network Multiplayer
 
-Implemented using a client / server approach based on the [Quake-III-Arena](https://github.com/id-Software/Quake-III-Arena/) networking model.
+Implemented using a client / (authoritative) server approach based on the [Overwatch Gameplay Architecture and Netcode](https://www.youtube.com/watch?v=W3aieHjyNvw).
+
+> Overwatch is a multimedia franchise centered on a series of multiplayer first-person shooter video games developed by Blizzard Entertainment. Overwatch was released in 2016 with a successor, Overwatch 2, released in 2022.
+
+The engine showcases the following features:
+* 100% server authority.
+* Client-side prediction and reconciliation.
+* Lag compensation inc sever rollback `No need to lead shots`.
+
+The Overwatch implementation is based on (amonst other things) the [Quake-III-Arena](https://github.com/id-Software/Quake-III-Arena/) networking model.
 
 > Quake III Arena is a 1999 multiplayer-focused first-person shooter developed by id Software
 
-* [Quake 3 Source Code Review: Network Model](https://fabiensanglard.net/quake3/network.php) _by Fabien Sanglard_
+* [Quake III Arena](https://github.com/id-Software/Quake-III-Arena/) networking model
 
-The engine showcases the following features:
-* 100% server authority
-* Client-side prediction and reconciliation
-* Lag compensation inc sever rollback `No need to lead shots`
+* [Quake 3 Source Code Review: Network Model](https://fabiensanglard.net/quake3/network.php) _by Fabien Sanglard_
 
 ## Getting Started
 
