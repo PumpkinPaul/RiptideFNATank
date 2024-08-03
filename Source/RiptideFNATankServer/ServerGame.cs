@@ -35,24 +35,18 @@ public class ServerGame : BaseGame
     // ECS
     ServerECSManager _ecsManager;
 
-    //Mapping between networking and ECS
-    readonly PlayerEntityMapper _playerEntityMapper = new();
-
     // Maps
     const int PLAYER_OFFSET_X = 32;
 
     readonly Vector2[] _playerSpawnPoints = [
-        new Vector2(PLAYER_OFFSET_X, BaseGame.SCREEN_HEIGHT / 2),
-        new Vector2(BaseGame.SCREEN_WIDTH - PLAYER_OFFSET_X, BaseGame.SCREEN_HEIGHT / 2)
+        new Vector2(PLAYER_OFFSET_X, SCREEN_HEIGHT / 2),
+        new Vector2(SCREEN_WIDTH - PLAYER_OFFSET_X, SCREEN_HEIGHT / 2)
     ];
 
     int _playerSpawnPointsIdx = 0;
 
     //HACK
     public static uint ServerTick;
-
-    //
-    SpriteBatch _spriteBatch;
 
     public ServerGame()
     {
@@ -70,59 +64,15 @@ public class ServerGame : BaseGame
         base.Initialize();
 
         _networkGameManager = new(
-            port: 17871,
-            maxClientCount: 4);
+            port: NetworkSettings.PORT,
+            maxClientCount: NetworkSettings.MAX_PLAYERS);
 
-        _ecsManager = new ServerECSManager(_networkGameManager, _playerEntityMapper, _spriteBatch);
+        _ecsManager = new ServerECSManager(_networkGameManager, SpriteBatch);
 
         _networkGameManager.ClientConnected += ClientConnectedHandler;
         _networkGameManager.ReceivedClientState += _ecsManager.ClientStateReceivedHandler;
 
         _networkGameManager.StartServer();
-    }
-
-    protected override void OnLoadContent()
-    {
-        _spriteBatch = BaseGame.Instance.SpriteBatch;// new SpriteBatch(GraphicsDevice);
-
-        //Resources.PixelTexture = new Texture2D(GraphicsDevice, 1, 1);
-        //Resources.PixelTexture.SetData(new[] { Color.White });
-
-        //Resources.DefaultSpriteFont = Content.Load<SpriteFont>("SpriteFonts/debug");
-
-        //BasicEffect = new BasicEffect(GraphicsDevice)
-        //{
-        //    World = ModelMatrix,
-        //    View = ViewMatrix,
-        //    Projection = ProjectionMatrix,
-        //    TextureEnabled = false,
-        //    VertexColorEnabled = true
-        //};
-
-        //var fontPath = Path.Combine(Path.GetFullPath("."), "Content", "Fonts", "SquaredDisplay.ttf");
-        //Resources.GameFont = TtfFontBaker.Bake(
-        //    File.ReadAllBytes(fontPath),
-        //    96,
-        //    1024,
-        //    1024,
-        //    new[] {
-        //        CharacterRange.BasicLatin,
-        //        CharacterRange.Latin1Supplement,
-        //        CharacterRange.LatinExtendedA,
-        //        CharacterRange.Cyrillic
-        //   }).CreateSpriteFont(GraphicsDevice);
-
-        //Resources.SmallFont = TtfFontBaker.Bake(
-        //    File.ReadAllBytes(fontPath),
-        //    32,
-        //    1024,
-        //    1024,
-        //    new[] {
-        //        CharacterRange.BasicLatin,
-        //        CharacterRange.Latin1Supplement,
-        //        CharacterRange.LatinExtendedA,
-        //        CharacterRange.Cyrillic
-        //   }).CreateSpriteFont(GraphicsDevice);
     }
 
     protected override void OnUpdate(GameTime gameTime)
@@ -147,13 +97,6 @@ public class ServerGame : BaseGame
     private void ClientConnectedHandler(ServerNetworkManager.ClientConnectedArgs e)
     {
         var name = e.Message.GetString();
-
-#if DEBUG
-        Logger.Info($"Message handler: {nameof(ClientConnectedHandler)} from client: {e.ClientId}");
-        Logger.Debug("Read the following...");
-        Logger.Debug($"{name}");
-#endif
-
         var position = _playerSpawnPoints[_playerSpawnPointsIdx];
         _networkGameManager.SpawnPlayer(e.ClientId, name, position, ServerTick);
 

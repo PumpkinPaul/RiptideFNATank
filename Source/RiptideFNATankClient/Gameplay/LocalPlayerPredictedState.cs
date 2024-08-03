@@ -21,7 +21,7 @@ namespace RiptideFNATankClient.Gameplay;
 /// It is predicted, and as the server is authoritative, it may well get overwritten by the real worlds state from the server
 /// </para>
 /// </summary>
-//TODO: this might be the same as the server state!
+// TODO: this might be the same as the server state!
 public record struct LocalPlayerPredictedState(
     Vector2 Position
 );

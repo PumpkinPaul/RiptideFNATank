@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RiptideFNATankClient": {
+      "commandName": "Project",
+      "commandLineArgs": "Paul"
+    }
+  }
+}

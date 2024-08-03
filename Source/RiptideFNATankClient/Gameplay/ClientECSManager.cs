@@ -95,7 +95,8 @@ public class ClientECSManager
             new RemotePlayerSpawnSystem(_world, _playerEntityMapper),
 
             // Get input from devices and turn into game actions.
-            new PlayerInputSystem(_world, _localPlayerActionsSnapshots),
+            new PlayerInputSystem(_world),
+            new SnapshotLocalPlayerActionsSystem(_world, _localPlayerActionsSnapshots),
             
             // ====================================================================================================
             // World Simulation Start
@@ -124,7 +125,7 @@ public class ClientECSManager
             new SnapshotLocalPlayerPredictedStateSystem(_world, _localPlayerStateSnapshots),
 
             // Send player game actions to the server - do this after writing the predication snapshot!
-            new PlayerSendNetworkCommandsSystem(_world, _networkGameManager),
+            new PlayerSendNetworkCommandsSystem(_world, _localPlayerActionsSnapshots, _networkGameManager),
 
             new LerpPositionSystem(_world),
         ];

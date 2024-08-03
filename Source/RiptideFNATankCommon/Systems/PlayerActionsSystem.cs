@@ -21,11 +21,12 @@ namespace RiptideFNATankCommon.Systems;
 /// </summary>
 public sealed class PlayerActionsSystem : MoonTools.ECS.System
 {
+    // TODO: move this to 'Tank stats'
     public const int PADDLE_SPEED = 5;
 
     readonly Filter _filter;
 
-    //TODO: HACK
+    // TODO: HACK
     readonly bool _isClient;
 
     public PlayerActionsSystem(World world, bool isClient) : base(world)
@@ -49,6 +50,7 @@ public sealed class PlayerActionsSystem : MoonTools.ECS.System
             Set(entity, new VelocityComponent(
                 new Vector2(0, moveUpSpeed + moveDownSpeed)));
 
+            // TODO: we should make sure we have the input
             if (!_isClient)
                 Set(entity, new PlayerActionsComponent());
         }

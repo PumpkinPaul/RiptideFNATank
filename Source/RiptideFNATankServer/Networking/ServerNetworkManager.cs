@@ -66,6 +66,7 @@ public class ServerNetworkManager
     {
         Server = new Server();
         Server.Start(_port, _maxClientCount);
+        // TODO: remove this!
         Server.TimeoutTime = 50000;
         Server.ClientDisconnected += ServerClientDisconnected;
     }

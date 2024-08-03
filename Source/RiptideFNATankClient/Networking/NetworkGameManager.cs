@@ -94,9 +94,10 @@ public class NetworkGameManager
 
     void LocalClientConnectedHandler(object sender, EventArgs e)
     {
+        // TODO: remove this!
         Client.TimeoutTime = 50000;
 
-        SendPlayerName();
+        SendPlayerJoined();
         LocalClientConnected?.Invoke();
     }
 
@@ -148,10 +149,10 @@ public class NetworkGameManager
         Client.Send(message);
     }
 
-    void SendPlayerName()
+    void SendPlayerJoined()
     {
         var message = Message.Create(MessageSendMode.Reliable, ClientMessageType.JoinGame);
-        message.AddString($"{Guid.NewGuid()}");
+        message.AddString(ClientGame.Name);
         Client.Send(message);
     }
 
@@ -163,9 +164,6 @@ public class NetworkGameManager
     public void QuitMatch()
     {
         Logger.Info($"QuitMatch");
-
-        // Ask Riptide to leave the match.
-        //await _RiptideConnection.Socket.LeaveMatchAsync(_currentMatch);
 
         // Destroy all existing player.
         foreach (var player in _players.Values)
@@ -199,14 +197,14 @@ public class NetworkGameManager
                 IsLocal = Client.Id == clientId
             };
 
+            // Add the player to the players array.
+            _players[clientId] = player;
+
             // Setup the appropriate network data values if this is a remote player.
             if (player.IsLocal)
                 SpawnedLocalPlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, initialServerTick, position));
             else
                 SpawnedRemotePlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, 0, position));
-
-            // Add the player to the players array.
-            _players[clientId] = player;
         }
     }
 
@@ -235,7 +233,7 @@ public class NetworkGameManager
             var playerId = message.GetUShort();
             var position = message.GetVector2();
 
-            //TODO: handle remote player disconnections here.
+            // TODO: handle remote player disconnections here.
             ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(playerId, serverSequeceId, clientTick, position));
         }
     }

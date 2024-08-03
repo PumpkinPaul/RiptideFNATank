@@ -12,8 +12,8 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
-using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Networking;
 using System;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
@@ -24,14 +24,20 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 /// <example>
 /// Check the state of the 'Q' key and turn it into a 'move up' command if it is pressed.
 /// </example>
-public sealed class PlayerInputSystem : MoonTools.ECS.System
+public sealed class SnapshotLocalPlayerActionsSystem : MoonTools.ECS.System
 {
+    readonly CircularBuffer<PlayerActionsComponent> _playerActions;
+
     readonly Filter _filter;
 
-    public PlayerInputSystem(World world) : base(world)
+    public SnapshotLocalPlayerActionsSystem(
+        World world,
+        CircularBuffer<PlayerActionsComponent> playerActions) : base(world)
     {
+        _playerActions = playerActions;
+
         _filter = FilterBuilder
-            .Include<PlayerInputComponent>()
+            .Include<PlayerActionsComponent>()
             .Build();
     }
 
@@ -43,16 +49,12 @@ public sealed class PlayerInputSystem : MoonTools.ECS.System
 
         foreach (var entity in _filter.Entities)
         {
-            ref var playerInput = ref Get<PlayerInputComponent>(entity);
+            ref readonly var playerActions = ref Get<PlayerActionsComponent>(entity);
 
-            var moveUp = keyBoardState.IsKeyDown(playerInput.MoveUpKey);
-            var moveDown = keyBoardState.IsKeyDown(playerInput.MoveDownKey);
-
-            var playerActions = new PlayerActionsComponent(
-                moveUp,
-                moveDown);
-
-            Set(entity, playerActions);
+            // Cache the action...
+            // ...so that we have a store of inputs we can send to the server to protect against packet loss
+            // ...a stream of actions that we can use to replay client inputs when reconciling state updates (server disagress with predicted client state)
+            _playerActions.Set(simulationState.CurrentClientTick, playerActions);
         }
     }
 }

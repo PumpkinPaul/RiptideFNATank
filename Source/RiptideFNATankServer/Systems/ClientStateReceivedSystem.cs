@@ -19,10 +19,8 @@ namespace RiptideFNATankServer.Gameplay.Systems;
 public readonly record struct ClientStateReceivedMessage(
     ushort ClientId,
     Entity Entity,
-    uint LastReceivedMessageId,
     byte GameId,
-    uint lastReceivedServerTick,
-    ushort ClientPredictionInMilliseconds,
+    uint LastReceivedServerTick,
     uint CurrentClientTick,
     byte UserCommandsCount,
     bool MoveUp,
@@ -66,7 +64,6 @@ public sealed class ClientStateReceivedSystem : MoonTools.ECS.System
             }
             else //else if (newState.sequence > lastState.sequence)
             {
-
                 _clientAcks[message.ClientId] = message.CurrentClientTick;
 
                 ref var playerActions = ref Get<PlayerActionsComponent>(message.Entity);

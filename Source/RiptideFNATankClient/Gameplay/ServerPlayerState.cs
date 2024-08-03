@@ -17,7 +17,7 @@ namespace RiptideFNATankClient.Gameplay;
 /// <summary>
 /// Actual state for the LOCAL player from the server.
 /// </summary>
-//TODO: this might be the same as the client state! and indeed the remote players might use this structure too.
+// TODO: this might be the same as the client state! and indeed the remote players might use this structure too.
 public record struct ServerPlayerState(
     Vector2 Position
 );

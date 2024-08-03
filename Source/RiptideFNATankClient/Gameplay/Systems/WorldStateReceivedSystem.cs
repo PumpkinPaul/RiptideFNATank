@@ -12,7 +12,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using Riptide;
 using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
@@ -58,7 +57,7 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
     public override void Update(TimeSpan delta)
     {
-        //TODO: I think we need to buffer these to avoid jitter.
+        // TODO: I think we need to buffer these to avoid jitter.
         var span = ReadMessages<ReceivedWorldStateMessage>();
         if (span.Length > 1)
         {
@@ -86,7 +85,6 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
                 if (simulationState.ServerProcessedClientInputAtClientTick > 0)
                 {
-
                     var serverPlayerState = new ServerPlayerState(message.Position);
                     var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerProcessedClientInputAtClientTick, serverPlayerState);
 

@@ -18,6 +18,7 @@ using RiptideFNATankCommon;
 using System;
 using RiptideFNATankClient.Gameplay.GamePhases;
 using RiptideFNATankClient.Networking;
+using RiptideFNATankCommon.Networking;
 
 namespace RiptideFNATankClient;
 
@@ -29,6 +30,8 @@ namespace RiptideFNATankClient;
 /// </remarks>
 public class ClientGame : BaseGame
 {
+    public static string Name = "Player";
+
     public readonly GamePhaseManager GamePhaseManager;
 
     readonly PlayerProfile _playerProfile;
@@ -49,7 +52,7 @@ public class ClientGame : BaseGame
 
         _playerProfile = PlayerProfile.LoadOrCreate(LocalApplicationDataPath);
 
-        _networkGameManager = new NetworkGameManager("127.0.0.1", 17871);
+        _networkGameManager = new NetworkGameManager("127.0.0.1", NetworkSettings.PORT);
         _networkGameManager.LocalClientConnected += () => GamePhaseManager.ChangePhase<PlayGamePhase>();
 
         GamePhaseManager = new GamePhaseManager();

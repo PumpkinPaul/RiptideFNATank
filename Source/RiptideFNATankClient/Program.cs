@@ -17,8 +17,9 @@ namespace RiptideFNATankClient;
 static class Program
 {
     [STAThread]
-    static void Main()
+    static void Main(string[] args)
     {
+        ClientGame.Name = args[0];
         new ClientGame().Run();
     }
 }

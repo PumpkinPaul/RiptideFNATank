@@ -17,4 +17,9 @@ public static class NetworkSettings
 {
     public const float SERVER_FPS = 60.0f;
     public const int BUFFER_SIZE = 1024;
+
+    public const ushort PORT = 17871;
+    public const ushort MAX_PLAYERS = 4;
+
+    public const byte COMMAND_BUFFER_SIZE = 2;
 }

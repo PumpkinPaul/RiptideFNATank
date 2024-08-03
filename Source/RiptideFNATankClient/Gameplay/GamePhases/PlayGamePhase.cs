@@ -14,7 +14,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using RiptideFNATankClient.Networking;
 using RiptideFNATankCommon;
-using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using System;
 using Wombat.Engine;
@@ -29,8 +28,6 @@ namespace RiptideFNATankClient.Gameplay.GamePhases;
 /// </remarks>
 public class PlayGamePhase : GamePhase
 {
-    WorldState _gameState;
-
     //Multiplayer networking
     readonly NetworkGameManager _networkGameManager;
 

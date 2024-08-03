@@ -57,12 +57,23 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
             ref var simulationState = ref GetSingleton<SimulationStateComponent>();
             simulationState.InitialServerTick = message.InitialServerTick;
 
-            //TODO: We are force reseting the client world tick here to match the server tick.
-            // This may or may not be a good idea
             Logger.Success($"Player joined server on InitialServerTick: {message.InitialServerTick}. Client tick was {simulationState.CurrentClientTick}");
-            Logger.Debug($"Reseting CurrentClientTick to match InitialServerTick");
 
-            simulationState.CurrentClientTick = message.InitialServerTick;
+            // We are force reseting the client world tick here to match the server tick.
+            // Note - our ticks are fixed rate ticks and are analogous to the Overwatch 'command frame'
+
+            // According to the "Overwatch Gameplay Architechture and Netcode" GDC talk the client should be ahead of the server
+            // by a buffer (1 or 2 command frames "as small as possible") + half RTT
+            // https://youtu.be/W3aieHjyNvw?list=PLvpI1FIKFk2ijMG-DT3ZfL7DZgAFtybLG&t=1536
+            // Instead of syncing the ticks, we need to fast forward the client some command frames!
+
+            // TODO: dynamically calculate this.
+            uint halfRTTInTicks = 2;
+            simulationState.CurrentClientTick = message.InitialServerTick + NetworkSettings.COMMAND_BUFFER_SIZE + halfRTTInTicks;
+
+            Logger.Success($"Fixed command buffer size is: {NetworkSettings.COMMAND_BUFFER_SIZE} ticks");
+            Logger.Success($"Half RTT esitmate is: {halfRTTInTicks} ticks");
+            Logger.Success($"Reseting CurrentClientTick to: {simulationState.CurrentClientTick}");
 
             Set(entity, new PlayerInputComponent(message.PlayerIndex, message.MoveUpKey, message.MoveDownKey));
             Set(entity, new PositionComponent(message.Position));

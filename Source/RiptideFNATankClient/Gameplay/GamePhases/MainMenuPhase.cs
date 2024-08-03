@@ -76,6 +76,7 @@ public class MainMenuPhase : GamePhase
         //Draw the UI
         spriteBatch.BeginTextRendering();
 
+        spriteBatch.DrawText(Resources.SmallFont, ClientGame.Name, new Vector2(8, BaseGame.SCREEN_HEIGHT - 32), Color.White, Alignment.TopLeft);
         spriteBatch.DrawText(Resources.GameFont, "Tank", new Vector2(centreX, BaseGame.SCREEN_HEIGHT * 0.65f), Color.White, Alignment.Centre);
 
         switch (_phase)

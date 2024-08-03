@@ -41,9 +41,10 @@ public class ServerECSManager
 
     //Renderers
     readonly SpriteRenderer _spriteRenderer;
-    SpriteBatch _spriteBatch;
+    readonly SpriteBatch _spriteBatch;
 
-    readonly PlayerEntityMapper _playerEntityMapper;
+    //Mapping between networking and ECS
+    readonly PlayerEntityMapper _playerEntityMapper = new();
     readonly ServerNetworkManager _networkGameManager;
     readonly WorldState _gameState;
 
@@ -59,11 +60,10 @@ public class ServerECSManager
 
     public ServerECSManager(
         ServerNetworkManager networkGameManager,
-        PlayerEntityMapper playerEntityMapper,
-        SpriteBatch spriteBatch)
+        SpriteBatch spriteBatch
+    )
     {
         _networkGameManager = networkGameManager;
-        _playerEntityMapper = playerEntityMapper;
         _gameState = new WorldState();
         _spriteBatch = spriteBatch;
 
@@ -139,7 +139,7 @@ public class ServerECSManager
         ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
         simulationState.CurrentServerTick++;
 
-        ServerGame.ServerTick = simulationState.CurrentServerTick++;
+        ServerGame.ServerTick = simulationState.CurrentServerTick;
 
         _world.FinishUpdate();
     }
@@ -174,8 +174,6 @@ public class ServerECSManager
 
     public void SpawnPlayer(ushort clientId, string name, Vector2 position)
     {
-        // TODO: Possibly need a producer / consumer here 
-
         // Queue this new state from a client
         _queuedPlayerSpawnMessages.Enqueue(new PlayerSpawnMessage(
             clientId,
@@ -192,31 +190,29 @@ public class ServerECSManager
             return;
 
         // Header
-        var lastReceivedMessageId = e.Message.GetUInt();
         var gameId = e.Message.GetByte();
         var lastReceivedServerTick = e.Message.GetUInt();
 
         // Payload
-        var clientPredictionInMilliseconds = e.Message.GetUShort();
         var currentClientTick = e.Message.GetUInt();
-        var userCommandsCount = e.Message.GetByte();
-        var moveUp = e.Message.GetBool();
-        var moveDown = e.Message.GetBool();
 
-        // TODO: Possibly need a producer / consumer here 
+        var commandCount = e.Message.GetByte();
+        for (var i = 0; i < commandCount; i++)
+        {
+            var moveUp = e.Message.GetBool();
+            var moveDown = e.Message.GetBool();
 
-        // Queue this new state from a client
-        _queuedClientStateMessages.Enqueue(new ClientStateReceivedMessage(
-            e.ClientId,
-            entity,
-            lastReceivedMessageId,
-            gameId,
-            lastReceivedServerTick,
-            clientPredictionInMilliseconds,
-            currentClientTick,
-            userCommandsCount,
-            moveUp,
-            moveDown
-        ));
+            // Queue this new state from a client
+            _queuedClientStateMessages.Enqueue(new ClientStateReceivedMessage(
+                e.ClientId,
+                entity,
+                gameId,
+                lastReceivedServerTick,
+                currentClientTick,
+                1,
+                moveUp,
+                moveDown
+            ));
+        }
     }
 }
