@@ -45,7 +45,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
 
         ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
 
-        var message = Message.Create(MessageSendMode.Unreliable, ClientMessageType.SendPlayerCommands);
+        var message = Message.Create(MessageSendMode.Unreliable, ClientMessageType.PlayerCommands);
 
         // Header
         byte gameId = 0;
@@ -58,9 +58,10 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
         // Send all the user commands that the server has yet to ack...
         var commandCount = (byte)(simulationState.CurrentClientTick - simulationState.ServerProcessedClientInputAtClientTick);
         message.AddByte(commandCount);
-        for (var i = simulationState.ServerProcessedClientInputAtClientTick + 1; i < simulationState.CurrentClientTick; i++)
+        for (uint clientTick = simulationState.ServerProcessedClientInputAtClientTick + 1; clientTick < simulationState.CurrentClientTick; clientTick++)
         {
-            var playerActions = _playerActions.Get(i);
+            message.AddUInt(clientTick);
+            var playerActions = _playerActions.Get(clientTick);
             message.AddBool(playerActions.MoveUp);
             message.AddBool(playerActions.MoveDown);
         }

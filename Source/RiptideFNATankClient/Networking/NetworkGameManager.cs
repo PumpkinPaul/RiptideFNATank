@@ -134,7 +134,7 @@ public class NetworkGameManager
         Instance.SpawnPlayer(message);
     }
 
-    [MessageHandler((ushort)ServerMessageType.SendWorldState)]
+    [MessageHandler((ushort)ServerMessageType.WorldState)]
     static void ReceivedWorldStateFromServer(Message message)
     {
         Instance.ReceivedNewWorldState(message);

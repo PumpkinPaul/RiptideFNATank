@@ -16,13 +16,14 @@ using RiptideFNATankCommon.Components;
 
 namespace RiptideFNATankServer.Gameplay.Systems;
 
-public readonly record struct ClientStateReceivedMessage(
+public readonly record struct ClientPlayerActionsReceivedMessage(
     ushort ClientId,
     Entity Entity,
     byte GameId,
     uint LastReceivedServerTick,
     uint CurrentClientTick,
     byte UserCommandsCount,
+    uint EffectiveClientTick,
     bool MoveUp,
     bool MoveDown
 );
@@ -30,11 +31,11 @@ public readonly record struct ClientStateReceivedMessage(
 /// <summary>
 /// 
 /// </summary>
-public sealed class ClientStateReceivedSystem : MoonTools.ECS.System
+public sealed class ClientPlayerActionsReceivedSystem : MoonTools.ECS.System
 {
     readonly Dictionary<ushort, uint> _clientAcks;
 
-    public ClientStateReceivedSystem(
+    public ClientPlayerActionsReceivedSystem(
         World world,
         Dictionary<ushort, uint> clientAcks
     ) : base(world)
@@ -44,7 +45,7 @@ public sealed class ClientStateReceivedSystem : MoonTools.ECS.System
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<ClientStateReceivedMessage>())
+        foreach (var message in ReadMessages<ClientPlayerActionsReceivedMessage>())
         {
             if (_clientAcks.ContainsKey(message.ClientId) == false)
                 _clientAcks[message.ClientId] = new();

@@ -37,11 +37,11 @@ public class ServerNetworkManager
 
     public event Action<ClientConnectedArgs> ClientConnected;
 
-    public readonly record struct ClientStateArgs(
+    public readonly record struct ClientPlayerActionsArgs(
         ushort ClientId,
         Message Message);
 
-    public event Action<ClientStateArgs> ReceivedClientState;
+    public event Action<ClientPlayerActionsArgs> ReceivedClientPlayerActions;
 
     public Server Server { get; private set; }
 
@@ -102,10 +102,10 @@ public class ServerNetworkManager
         Instance.ClientConnected?.Invoke(new ClientConnectedArgs(clientId, message));
     }
 
-    [MessageHandler((ushort)ClientMessageType.SendPlayerCommands)]
-    static void ReceivedClientStateHandler(ushort clientId, Message message)
+    [MessageHandler((ushort)ClientMessageType.PlayerCommands)]
+    static void ReceivedClientPlayerActionsHandler(ushort clientId, Message message)
     {
-        Instance.ReceivedClientState?.Invoke(new ClientStateArgs(clientId, message));
+        Instance.ReceivedClientPlayerActions?.Invoke(new ClientPlayerActionsArgs(clientId, message));
     }
 
     #endregion

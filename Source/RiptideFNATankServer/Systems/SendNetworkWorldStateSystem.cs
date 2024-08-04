@@ -76,7 +76,7 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             var clientId = client.Key;
             _clientAcks.TryGetValue(clientId, out var clientTick);
 
-            var message = Message.Create(MessageSendMode.Unreliable, ServerMessageType.SendWorldState);
+            var message = Message.Create(MessageSendMode.Unreliable, ServerMessageType.WorldState);
 
             // Header
             message.AddUShort(clientId);

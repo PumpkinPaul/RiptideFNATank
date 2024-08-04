@@ -18,7 +18,7 @@ namespace RiptideFNATankCommon.Networking;
 public enum ClientMessageType : ushort
 {
     JoinGame = 1,
-    SendPlayerCommands
+    PlayerCommands
 }
 
 /// <summary>
@@ -27,5 +27,5 @@ public enum ClientMessageType : ushort
 public enum ServerMessageType : ushort
 {
     SpawnPlayer = 1,
-    SendWorldState
+    WorldState
 }

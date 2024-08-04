@@ -49,7 +49,7 @@ public class ServerECSManager
     readonly WorldState _gameState;
 
     readonly Queue<PlayerSpawnMessage> _queuedPlayerSpawnMessages = new();
-    readonly Queue<ClientStateReceivedMessage> _queuedClientStateMessages = new();
+    readonly Queue<ClientPlayerActionsReceivedMessage> _queuedClientStateMessages = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
 
     // This is possibly temp while I try to figure this stuff out
@@ -77,9 +77,8 @@ public class ServerECSManager
         _world.Set(_world.CreateEntity(), new SimulationStateComponent());
 
         _systems = [
-            // State from client
-            // TODO: how to update the master state!
-            new ClientStateReceivedSystem(_world, _clientAcks),
+            // PlayerActions have been received from client
+            new ClientPlayerActionsReceivedSystem(_world, _clientAcks),
 
             //Spawn the entities into the game world
             new PlayerSpawnSystem(_world, _playerEntityMapper),
@@ -182,7 +181,7 @@ public class ServerECSManager
         ));
     }
 
-    public void ClientStateReceivedHandler(ClientStateArgs e)
+    public void ClientPlayerActionsReceivedHandler(ClientPlayerActionsArgs e)
     {
         var entity = _playerEntityMapper.GetEntityFromClientId(e.ClientId);
 
@@ -199,17 +198,19 @@ public class ServerECSManager
         var commandCount = e.Message.GetByte();
         for (var i = 0; i < commandCount; i++)
         {
+            var effectiveClientTick = e.Message.GetUInt();
             var moveUp = e.Message.GetBool();
             var moveDown = e.Message.GetBool();
 
             // Queue this new state from a client
-            _queuedClientStateMessages.Enqueue(new ClientStateReceivedMessage(
+            _queuedClientStateMessages.Enqueue(new ClientPlayerActionsReceivedMessage(
                 e.ClientId,
                 entity,
                 gameId,
                 lastReceivedServerTick,
                 currentClientTick,
-                1,
+                1, // TODO: could probably get rid of this
+                effectiveClientTick,
                 moveUp,
                 moveDown
             ));
