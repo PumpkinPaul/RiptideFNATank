@@ -13,7 +13,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using MoonTools.ECS;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
-using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using System;
 
@@ -50,18 +49,18 @@ public sealed class ReconcilePredictedStateSystem : MoonTools.ECS.System
     {
         ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
 
-        if (simulationState.LastReceivedServerTick == 0)
+        if (simulationState.LastReceivedServerCommandFrame == 0)
             return;
 
         foreach (var entity in _filter.Entities)
         {
-            var predictedState = _localPlayerStateSnapshots.Get(simulationState.ServerProcessedClientInputAtClientTick);
-            var serverState = _serverPlayerStateSnapshots.Get(simulationState.ServerProcessedClientInputAtClientTick);
+            var predictedState = _localPlayerStateSnapshots.Get(simulationState.ServerReceivedClientCommandFrame);
+            var serverState = _serverPlayerStateSnapshots.Get(simulationState.ServerReceivedClientCommandFrame);
 
             if (predictedState.Position != serverState.Position)
             {
                 // TODO: Reconcile and replay the local input
-                Logger.Error($"Local client prediction error at ServerProcessedClientInputAtClientTick: {simulationState.ServerProcessedClientInputAtClientTick}");
+                Logger.Error($"Local client prediction error at ServerReceivedClientCommandFrame: {simulationState.ServerReceivedClientCommandFrame}");
                 Logger.Warning($"Predicted position: {predictedState.Position} vs actual position: {serverState.Position}");
             }
         }

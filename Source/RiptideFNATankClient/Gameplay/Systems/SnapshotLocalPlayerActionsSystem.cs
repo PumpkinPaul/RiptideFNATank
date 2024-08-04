@@ -54,7 +54,7 @@ public sealed class SnapshotLocalPlayerActionsSystem : MoonTools.ECS.System
             // Cache the action...
             // ...so that we have a store of inputs we can send to the server to protect against packet loss
             // ...a stream of actions that we can use to replay client inputs when reconciling state updates (server disagress with predicted client state)
-            _playerActions.Set(simulationState.CurrentClientTick, playerActions);
+            _playerActions.Set(simulationState.CurrentClientCommandFrame, playerActions);
         }
     }
 }

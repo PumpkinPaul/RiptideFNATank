@@ -17,7 +17,6 @@ using RiptideFNATankClient.Gameplay.Renderers;
 using RiptideFNATankClient.Gameplay.Systems;
 using RiptideFNATankClient.Networking;
 using RiptideFNATankCommon.Components;
-using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankCommon.Systems;
 using System.Collections.Generic;
@@ -55,9 +54,6 @@ public class ClientECSManager
     // Authoritative state received from the server 
     readonly CircularBuffer<ServerPlayerState> _serverPlayerStateSnapshots = new(1024);
 
-    // Queue for incoming world states.
-    readonly Queue<WorldState> _worldStateQueue = new();
-
     // Queued network messages
     readonly Queue<LocalPlayerSpawnMessage> _localPlayerSpawnMessages = new();
     readonly Queue<RemotePlayerSpawnMessage> _remotePlayerSpawnMessages = new();
@@ -81,8 +77,8 @@ public class ClientECSManager
 
         // Add a singleton (I think) for common simulation state.
         // e.g.
-        // Current simulation tick
-        // Last received server tick
+        // Current command frame
+        // Last received server command frame
         // etc
         _world.Set(_world.CreateEntity(), new SimulationStateComponent());
 
@@ -138,7 +134,7 @@ public class ClientECSManager
         //Queue entity creation in the ECS
         _localPlayerSpawnMessages.Enqueue(new LocalPlayerSpawnMessage(
             ClientId: e.ClientId,
-            InitialServerTick: e.InitialServerTick,
+            InitialServerCommandFrame: e.InitialServerCommandFrame,
             PlayerIndex: PlayerIndex.One,
             MoveUpKey: Keys.Q,
             MoveDownKey: Keys.A,
@@ -162,8 +158,8 @@ public class ClientECSManager
         // Server snapshot received
         _remoteWorldStateMessages.Enqueue(new ReceivedWorldStateMessage(
             ClientId: e.ClientId,
-            ServerTick: e.ServerTick,
-            ClientTick: e.ClientTick,
+            ServerCommandFrame: e.ServerCommandFrame,
+            ServerReceivedClientCommandFrame: e.ClientCommandFrame,
             Position: e.Position
         ));
     }
@@ -192,7 +188,7 @@ public class ClientECSManager
 
         // How do we feel about this being outside of a system?
         ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
-        simulationState.CurrentClientTick++;
+        simulationState.CurrentClientCommandFrame++;
 
         _world.FinishUpdate();
     }

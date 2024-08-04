@@ -45,23 +45,27 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
 
         ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
 
+        // TODO: check this is not a hack!
+        if (simulationState.ServerReceivedClientCommandFrame == 0)
+            return;
+
         var message = Message.Create(MessageSendMode.Unreliable, ClientMessageType.PlayerCommands);
 
         // Header
         byte gameId = 0;
         message.AddByte(gameId);
-        message.AddUInt(simulationState.LastReceivedServerTick);
+        message.AddUInt(simulationState.LastReceivedServerCommandFrame);
 
         // Payload
-        message.AddUInt(simulationState.CurrentClientTick);
+        message.AddUInt(simulationState.CurrentClientCommandFrame);
 
         // Send all the user commands that the server has yet to ack...
-        var commandCount = (byte)(simulationState.CurrentClientTick - simulationState.ServerProcessedClientInputAtClientTick);
+        var commandCount = (byte)(simulationState.CurrentClientCommandFrame - simulationState.ServerReceivedClientCommandFrame);
         message.AddByte(commandCount);
-        for (uint clientTick = simulationState.ServerProcessedClientInputAtClientTick + 1; clientTick < simulationState.CurrentClientTick; clientTick++)
+        for (uint clientCommandFrame = simulationState.ServerReceivedClientCommandFrame + 1; clientCommandFrame < simulationState.CurrentClientCommandFrame; clientCommandFrame++)
         {
-            message.AddUInt(clientTick);
-            var playerActions = _playerActions.Get(clientTick);
+            message.AddUInt(clientCommandFrame);
+            var playerActions = _playerActions.Get(clientCommandFrame);
             message.AddBool(playerActions.MoveUp);
             message.AddBool(playerActions.MoveDown);
         }

@@ -52,8 +52,8 @@ public sealed class SnapshotLocalPlayerPredictedStateSystem : MoonTools.ECS.Syst
             var localPlayerState = new LocalPlayerPredictedState(
                 position.Value);
 
-            var idx = _localPlayerStateSnapshots.Set(simulationState.CurrentClientTick, localPlayerState);
-            Logger.Info($"Wrote local player state CurrentClientTick: {simulationState.CurrentClientTick}, resolves to idx: {idx}, LastReceivedServerTick: {simulationState.LastReceivedServerTick}, Position: {localPlayerState.Position}");
+            var idx = _localPlayerStateSnapshots.Set(simulationState.CurrentClientCommandFrame, localPlayerState);
+            Logger.Info($"Wrote local player state CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}, resolves to idx: {idx}, LastReceivedServerCommandFrame: {simulationState.LastReceivedServerCommandFrame}, Position: {localPlayerState.Position}");
         }
     }
 }

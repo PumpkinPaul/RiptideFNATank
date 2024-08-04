@@ -46,7 +46,7 @@ public class ServerGame : BaseGame
     int _playerSpawnPointsIdx = 0;
 
     //HACK
-    public static uint ServerTick;
+    public static uint ServerCommandFrame;
 
     public ServerGame()
     {
@@ -98,7 +98,7 @@ public class ServerGame : BaseGame
     {
         var name = e.Message.GetString();
         var position = _playerSpawnPoints[_playerSpawnPointsIdx];
-        _networkGameManager.SpawnPlayer(e.ClientId, name, position, ServerTick);
+        _networkGameManager.SpawnPlayer(e.ClientId, name, position, ServerCommandFrame);
 
         _ecsManager.SpawnPlayer(e.ClientId, name, position);
 

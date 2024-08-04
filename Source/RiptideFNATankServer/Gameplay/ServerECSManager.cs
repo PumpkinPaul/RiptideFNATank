@@ -13,7 +13,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
-using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankCommon.Systems;
 using RiptideFNATankServer.Gameplay.Renderers;
@@ -26,7 +25,7 @@ using static RiptideFNATankServer.Networking.ServerNetworkManager;
 namespace RiptideFNATankServer.Gameplay;
 
 public record struct SimulationStateComponent(
-    uint CurrentServerTick
+    uint CurrentServerCommandFrame
 );
 
 /// <summary>
@@ -46,7 +45,6 @@ public class ServerECSManager
     //Mapping between networking and ECS
     readonly PlayerEntityMapper _playerEntityMapper = new();
     readonly ServerNetworkManager _networkGameManager;
-    readonly WorldState _gameState;
 
     readonly Queue<PlayerSpawnMessage> _queuedPlayerSpawnMessages = new();
     readonly Queue<ClientPlayerActionsReceivedMessage> _queuedClientStateMessages = new();
@@ -64,16 +62,11 @@ public class ServerECSManager
     )
     {
         _networkGameManager = networkGameManager;
-        _gameState = new WorldState();
         _spriteBatch = spriteBatch;
 
         _world = new World();
 
-        // Add a singleton (I think) for common simulation state.
-        // e.g.
-        // Current simulation tick
-        // Last received server tick
-        // etc
+        // Add a singleton for common simulation state.
         _world.Set(_world.CreateEntity(), new SimulationStateComponent());
 
         _systems = [
@@ -136,9 +129,9 @@ public class ServerECSManager
 
         // How do we feel about this being outside of a system?
         ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
-        simulationState.CurrentServerTick++;
+        simulationState.CurrentServerCommandFrame++;
 
-        ServerGame.ServerTick = simulationState.CurrentServerTick;
+        ServerGame.ServerCommandFrame = simulationState.CurrentServerCommandFrame;
 
         _world.FinishUpdate();
     }
@@ -190,15 +183,15 @@ public class ServerECSManager
 
         // Header
         var gameId = e.Message.GetByte();
-        var lastReceivedServerTick = e.Message.GetUInt();
+        var lastReceivedServerCommandFrame = e.Message.GetUInt();
 
         // Payload
-        var currentClientTick = e.Message.GetUInt();
+        var currentClientCommandFrame = e.Message.GetUInt();
 
         var commandCount = e.Message.GetByte();
         for (var i = 0; i < commandCount; i++)
         {
-            var effectiveClientTick = e.Message.GetUInt();
+            var effectiveClientCommandFrame = e.Message.GetUInt();
             var moveUp = e.Message.GetBool();
             var moveDown = e.Message.GetBool();
 
@@ -207,10 +200,10 @@ public class ServerECSManager
                 e.ClientId,
                 entity,
                 gameId,
-                lastReceivedServerTick,
-                currentClientTick,
+                lastReceivedServerCommandFrame,
+                currentClientCommandFrame,
                 1, // TODO: could probably get rid of this
-                effectiveClientTick,
+                effectiveClientCommandFrame,
                 moveUp,
                 moveDown
             ));

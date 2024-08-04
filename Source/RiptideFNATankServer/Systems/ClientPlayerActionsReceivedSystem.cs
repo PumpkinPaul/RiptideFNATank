@@ -20,10 +20,10 @@ public readonly record struct ClientPlayerActionsReceivedMessage(
     ushort ClientId,
     Entity Entity,
     byte GameId,
-    uint LastReceivedServerTick,
-    uint CurrentClientTick,
+    uint LastReceivedServerCommandFrame,
+    uint CurrentClientCommandFrame,
     byte UserCommandsCount,
-    uint EffectiveClientTick,
+    uint EffectiveClientCommandFrame,
     bool MoveUp,
     bool MoveDown
 );
@@ -50,27 +50,27 @@ public sealed class ClientPlayerActionsReceivedSystem : MoonTools.ECS.System
             if (_clientAcks.ContainsKey(message.ClientId) == false)
                 _clientAcks[message.ClientId] = new();
 
-            var lastReceivedClientTick = _clientAcks[message.ClientId];
+            var lastReceivedClientCommandFrame = _clientAcks[message.ClientId];
 
             // Ensure the new state > the last state received
-            if (message.CurrentClientTick < lastReceivedClientTick)
+            if (message.CurrentClientCommandFrame < lastReceivedClientCommandFrame)
             {
                 // Discard packet
-                Logger.Warning($"Received an old packet from client for CurrentClientTick: {message.CurrentClientTick}. Client has already received state for tick: {lastReceivedClientTick}.");
+                Logger.Warning($"Received an old packet from client for CurrentClientCommandFrame: {message.CurrentClientCommandFrame}. Client has already received state for CommandFrame: {lastReceivedClientCommandFrame}.");
             }
-            else if (message.CurrentClientTick == lastReceivedClientTick)
+            else if (message.CurrentClientCommandFrame == lastReceivedClientCommandFrame)
             {
                 // Duplicate packet?
-                Logger.Warning($"Received a duplicate packet from client for CurrentClientTick: {message.CurrentClientTick}.");
+                Logger.Warning($"Received a duplicate packet from client for CurrentClientCommandFrame: {message.CurrentClientCommandFrame}.");
             }
             else //else if (newState.sequence > lastState.sequence)
             {
-                _clientAcks[message.ClientId] = message.CurrentClientTick;
+                _clientAcks[message.ClientId] = message.CurrentClientCommandFrame;
 
                 ref var playerActions = ref Get<PlayerActionsComponent>(message.Entity);
                 Set(message.Entity, new PlayerActionsComponent(message.MoveUp, message.MoveDown));
 
-                Logger.Info($"Got inputs from client for CurrentClientTick: {message.CurrentClientTick}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
+                Logger.Info($"Got inputs from client for CurrentClientCommandFrame: {message.CurrentClientCommandFrame}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
             }
         }
     }

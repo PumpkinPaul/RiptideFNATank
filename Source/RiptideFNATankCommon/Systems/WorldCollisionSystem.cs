@@ -13,7 +13,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using RiptideFNATankCommon.Components;
-using RiptideFNATankCommon.Gameplay;
 using Wombat.Engine;
 
 namespace RiptideFNATankCommon.Systems;

@@ -15,7 +15,6 @@ using Riptide;
 using Riptide.Utils;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Extensions;
-using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using System;
 using System.Collections.Generic;
@@ -24,14 +23,14 @@ namespace RiptideFNATankClient.Networking;
 
 public record ReceivedSpawnPlayerEventArgs(
     ushort ClientId,
-    uint InitialServerTick,
+    uint InitialServerCommandFrame,
     Vector2 Position
 );
 
 public record ReceivedWorldStateEventArgs(
     ushort ClientId,
-    uint ServerTick,
-    uint ClientTick,
+    uint ServerCommandFrame,
+    uint ClientCommandFrame,
     Vector2 Position
 );
 
@@ -181,7 +180,7 @@ public class NetworkGameManager
         {
             var clientId = message.GetUShort();
             var name = message.GetString();
-            var initialServerTick = message.GetUInt();
+            var initialServerCommandFrame = message.GetUInt();
             var position = message.GetVector2();
 
             // If the player has already been spawned, return early.
@@ -202,7 +201,7 @@ public class NetworkGameManager
 
             // Setup the appropriate network data values if this is a remote player.
             if (player.IsLocal)
-                SpawnedLocalPlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, initialServerTick, position));
+                SpawnedLocalPlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, initialServerCommandFrame, position));
             else
                 SpawnedRemotePlayer?.Invoke(new ReceivedSpawnPlayerEventArgs(clientId, 0, position));
         }
@@ -219,8 +218,8 @@ public class NetworkGameManager
             return;
 
         // Snapshot
-        var serverSequeceId = message.GetUInt();
-        var clientTick = message.GetUInt();
+        var serverCommandFrame = message.GetUInt();
+        var clientCommandFrame = message.GetUInt();
 
         // Number of players
         var playerCount = message.GetByte();
@@ -234,7 +233,7 @@ public class NetworkGameManager
             var position = message.GetVector2();
 
             // TODO: handle remote player disconnections here.
-            ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(playerId, serverSequeceId, clientTick, position));
+            ReceivedWorldState?.Invoke(new ReceivedWorldStateEventArgs(playerId, serverCommandFrame, clientCommandFrame, position));
         }
     }
 

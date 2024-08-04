@@ -22,16 +22,16 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 
 public readonly record struct ReceivedWorldStateMessage(
     ushort ClientId,
-    uint ServerTick,
-    uint ClientTick,
+    uint ServerCommandFrame,
+    uint ServerReceivedClientCommandFrame,
     Vector2 Position
 );
 
 public record struct SimulationStateComponent(
-    uint InitialServerTick,
-    uint LastReceivedServerTick,
-    uint CurrentClientTick,
-    uint ServerProcessedClientInputAtClientTick
+    uint InitialServerCommandFrame,
+    uint LastReceivedServerCommandFrame,
+    uint CurrentClientCommandFrame,
+    uint ServerReceivedClientCommandFrame
 );
 
 /// <summary>
@@ -68,10 +68,10 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
         foreach (var message in span)
         {
-            if (IsValidPacket(message.ServerTick, simulationState.LastReceivedServerTick) == false)
+            if (IsValidPacket(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame) == false)
                 continue;
 
-            //Logger.Info($"Received a valid packet from server for sequence: {message.ServerTick}.");
+            //Logger.Info($"Received a valid packet from server for sequence: {message.ServerCommandFrame}.");
 
             var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
@@ -80,15 +80,15 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
             if (Has<PlayerInputComponent>(entity))
             {
-                simulationState.LastReceivedServerTick = message.ServerTick;
-                simulationState.ServerProcessedClientInputAtClientTick = message.ClientTick;
+                simulationState.LastReceivedServerCommandFrame = message.ServerCommandFrame;
+                simulationState.ServerReceivedClientCommandFrame = message.ServerReceivedClientCommandFrame;
 
-                if (simulationState.ServerProcessedClientInputAtClientTick > 0)
+                if (simulationState.ServerReceivedClientCommandFrame > 0)
                 {
                     var serverPlayerState = new ServerPlayerState(message.Position);
-                    var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerProcessedClientInputAtClientTick, serverPlayerState);
+                    var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerReceivedClientCommandFrame, serverPlayerState);
 
-                    Logger.Info($"Wrote server state snpshot for ServerProcessedClientInputAtClientTick: {simulationState.ServerProcessedClientInputAtClientTick}, resolves to idx: {idx}, CurrentClientTick: {simulationState.CurrentClientTick}, Position: {serverPlayerState.Position}");
+                    Logger.Info($"Wrote server state snpshot for ServerReceivedClientCommandFrame: {simulationState.ServerReceivedClientCommandFrame}, resolves to idx: {idx}, CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}, Position: {serverPlayerState.Position}");
                 }
             }
             else
@@ -109,22 +109,22 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
     /// Due to the way UDP works, it could be old, duplicated, etc
     /// </para>
     /// </summary>
-    /// <param name="justReceivedServerTick">The tick on the server this packet is for.</param>
-    /// <param name="lastReceivedServerTick">The tick of the most recent packet received by us (the client).</param>
+    /// <param name="justReceivedServerCommandFrame">The CommandFrame on the server this packet is for.</param>
+    /// <param name="lastReceivedServerCommandFrame">The CommandFrame of the most recent packet received by us (the client).</param>
     /// <returns></returns>
-    static bool IsValidPacket(uint justReceivedServerTick, uint lastReceivedServerTick)
+    static bool IsValidPacket(uint justReceivedServerCommandFrame, uint lastReceivedServerCommandFrame)
     {
-        if (justReceivedServerTick < lastReceivedServerTick)
+        if (justReceivedServerCommandFrame < lastReceivedServerCommandFrame)
         {
             // Discard packet
-            Logger.Warning($"Received an old packet from server for sequence: {justReceivedServerTick}. Client has already received state for sequence: {lastReceivedServerTick}.");
+            Logger.Warning($"Received an old packet from server for sequence: {justReceivedServerCommandFrame}. Client has already received state for sequence: {lastReceivedServerCommandFrame}.");
             return false;
         }
         //HACK: Remove this when the server creates the state proper!
-        else if (false && justReceivedServerTick == lastReceivedServerTick)
+        else if (false && justReceivedServerCommandFrame == lastReceivedServerCommandFrame)
         {
             // Duplicate packet?
-            Logger.Warning($"Received a duplicate packet from server for sequence: {justReceivedServerTick}.");
+            Logger.Warning($"Received a duplicate packet from server for sequence: {justReceivedServerCommandFrame}.");
             return false;
         }
 

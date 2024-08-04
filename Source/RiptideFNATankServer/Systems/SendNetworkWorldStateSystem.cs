@@ -16,7 +16,6 @@ using Riptide;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Extensions;
-using RiptideFNATankCommon.Gameplay;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
@@ -69,12 +68,12 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
         foreach(var client in _worldState)
         {
             //Simulate out of order packets
-            var serverTick = RandomHelper.FastRandom.PercentageChance(_networkGameManager.OutOfOrderPacketPercentage)
-                ? (uint)RandomHelper.FastRandom.Next(0, (int)simulationState.CurrentServerTick)
-                : simulationState.CurrentServerTick;
+            var serverCommandFrame = RandomHelper.FastRandom.PercentageChance(_networkGameManager.OutOfOrderPacketPercentage)
+                ? (uint)RandomHelper.FastRandom.Next(0, (int)simulationState.CurrentServerCommandFrame)
+                : simulationState.CurrentServerCommandFrame;
 
             var clientId = client.Key;
-            _clientAcks.TryGetValue(clientId, out var clientTick);
+            _clientAcks.TryGetValue(clientId, out var clientCommandFrame);
 
             var message = Message.Create(MessageSendMode.Unreliable, ServerMessageType.WorldState);
 
@@ -84,8 +83,8 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             message.AddByte(gameId);
 
             // Snapshot
-            message.AddUInt(serverTick);
-            message.AddUInt(clientTick);
+            message.AddUInt(serverCommandFrame);
+            message.AddUInt(clientCommandFrame);
 
             // Number of players
             message.AddByte((byte)_worldState.Count);
