@@ -50,15 +50,13 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
     {
         foreach (var message in ReadMessages<LocalPlayerSpawnMessage>())
         {
+            Logger.Success($"Player joined server on InitialServerCommandFrame: {message.InitialServerCommandFrame}.");
+
             var entity = CreateEntity();
 
             _playerEntityMapper.AddPlayer(message.ClientId, entity);
 
             ref var simulationState = ref GetSingleton<SimulationStateComponent>();
-            simulationState.InitialServerCommandFrame = message.InitialServerCommandFrame;
-            simulationState.LastReceivedServerCommandFrame = simulationState.InitialServerCommandFrame;
-
-            Logger.Success($"Player joined server on InitialServerCommandFrame: {message.InitialServerCommandFrame}. CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}");
 
             // According to the "Overwatch Gameplay Architechture and Netcode" GDC talk the client should be ahead of the server
             // by a buffer (1 or 2 command frames "as small as possible") + half RTT
@@ -68,6 +66,7 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
             // TODO: dynamically calculate this.
             uint halfRTTInCommandFrame = 2;
             simulationState.CurrentClientCommandFrame = message.InitialServerCommandFrame + NetworkSettings.COMMAND_BUFFER_SIZE + halfRTTInCommandFrame;
+            simulationState.InitialClientCommandFrame = simulationState.CurrentClientCommandFrame;
             simulationState.ServerReceivedClientCommandFrame = simulationState.CurrentClientCommandFrame - 1;
 
             Logger.Success($"Fixed command buffer size is: {NetworkSettings.COMMAND_BUFFER_SIZE} command frames");

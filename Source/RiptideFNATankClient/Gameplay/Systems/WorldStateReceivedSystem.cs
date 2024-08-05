@@ -28,7 +28,7 @@ public readonly record struct ReceivedWorldStateMessage(
 );
 
 public record struct SimulationStateComponent(
-    uint InitialServerCommandFrame,
+    uint InitialClientCommandFrame,
     uint LastReceivedServerCommandFrame,
     uint CurrentClientCommandFrame,
     uint ServerReceivedClientCommandFrame
