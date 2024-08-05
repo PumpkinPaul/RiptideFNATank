@@ -26,13 +26,8 @@ public sealed class PlayerActionsSystem : MoonTools.ECS.System
 
     readonly Filter _filter;
 
-    // TODO: HACK
-    readonly bool _isClient;
-
-    public PlayerActionsSystem(World world, bool isClient) : base(world)
+    public PlayerActionsSystem(World world) : base(world)
     {
-        _isClient = isClient;
-
         _filter = FilterBuilder
             .Include<PlayerActionsComponent>()
             .Build();
@@ -49,10 +44,6 @@ public sealed class PlayerActionsSystem : MoonTools.ECS.System
 
             Set(entity, new VelocityComponent(
                 new Vector2(0, moveUpSpeed + moveDownSpeed)));
-
-            // TODO: we should make sure we have the input
-            if (!_isClient)
-                Set(entity, new PlayerActionsComponent());
         }
     }
 }

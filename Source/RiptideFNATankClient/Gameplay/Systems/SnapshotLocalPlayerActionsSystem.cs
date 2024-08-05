@@ -43,8 +43,6 @@ public sealed class SnapshotLocalPlayerActionsSystem : MoonTools.ECS.System
 
     public override void Update(TimeSpan delta)
     {
-        var keyBoardState = Keyboard.GetState();
-
         ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
 
         foreach (var entity in _filter.Entities)

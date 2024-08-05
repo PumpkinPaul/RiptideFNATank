@@ -13,6 +13,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using MoonTools.ECS;
 using Riptide;
 using RiptideFNATankClient.Networking;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 using System;
@@ -28,6 +29,8 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
     readonly CircularBuffer<PlayerActionsComponent> _playerActions;
     readonly NetworkGameManager _networkGameManager;
 
+    readonly Filter _filter;
+
     public PlayerSendNetworkCommandsSystem(
         World world,
         CircularBuffer<PlayerActionsComponent> playerActions,
@@ -36,6 +39,10 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
     {
         _playerActions = playerActions;
         _networkGameManager = networkGameManager;
+
+        _filter = FilterBuilder
+            .Include<PlayerActionsComponent>()
+            .Build();
     }
 
     public override void Update(TimeSpan delta)
@@ -45,32 +52,41 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
 
         ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
 
-        // TODO: check this is not a hack!
-        if (simulationState.ServerReceivedClientCommandFrame == 0)
-            return;
-
-        var message = Message.Create(MessageSendMode.Unreliable, ClientMessageType.PlayerCommands);
-
-        // Header
-        byte gameId = 0;
-        message.AddByte(gameId);
-        message.AddUInt(simulationState.LastReceivedServerCommandFrame);
-
-        // Payload
-        message.AddUInt(simulationState.CurrentClientCommandFrame);
-
-        // Send all the user commands that the server has yet to ack...
-        var commandCount = (byte)(simulationState.CurrentClientCommandFrame - simulationState.ServerReceivedClientCommandFrame);
-        message.AddByte(commandCount);
-        for (uint clientCommandFrame = simulationState.ServerReceivedClientCommandFrame + 1; clientCommandFrame < simulationState.CurrentClientCommandFrame; clientCommandFrame++)
+        foreach (var entity in _filter.Entities)
         {
-            message.AddUInt(clientCommandFrame);
-            var playerActions = _playerActions.Get(clientCommandFrame);
-            message.AddBool(playerActions.MoveUp);
-            message.AddBool(playerActions.MoveDown);
-        }
+            // Send all the user commands that the server has yet to ack...
+            var commandCount = simulationState.CurrentClientCommandFrame - simulationState.ServerReceivedClientCommandFrame;
 
-        // Send a network packet containing the player's state.
-        _networkGameManager.SendMessage(message);
+            const uint MAX_COMMAND_COUNT = 120;
+            if (commandCount > MAX_COMMAND_COUNT)
+            {
+                Logger.Error($"Client is too far behind server!");
+                continue;
+            }
+
+            var message = Message.Create(MessageSendMode.Unreliable, ClientMessageType.PlayerCommands);
+
+            // Header
+            byte gameId = 0;
+            message.AddByte(gameId);
+            message.AddUInt(simulationState.LastReceivedServerCommandFrame);
+
+            // Payload
+            message.AddUInt(simulationState.CurrentClientCommandFrame);
+            message.AddByte((byte)commandCount);
+
+            Logger.Info($"Send client commands to server - ServerReceivedClientCommandFrame {simulationState.ServerReceivedClientCommandFrame}, CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}, commandCount: {commandCount}");
+
+            for (uint clientCommandFrame = simulationState.ServerReceivedClientCommandFrame + 1; clientCommandFrame <= simulationState.CurrentClientCommandFrame; clientCommandFrame++)
+            {
+                message.AddUInt(clientCommandFrame);
+                var playerActions = _playerActions.Get(clientCommandFrame);
+                message.AddBool(playerActions.MoveUp);
+                message.AddBool(playerActions.MoveDown);
+            }
+
+            // Send a network packet containing the player's state.
+            _networkGameManager.SendMessage(message);
+        }
     }
 }

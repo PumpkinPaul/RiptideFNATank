@@ -68,7 +68,7 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
         foreach (var message in span)
         {
-            if (IsValidPacket(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame) == false)
+            if (UDPHelper.IsValidPacket(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame) == false)
                 continue;
 
             //Logger.Info($"Received a valid packet from server for sequence: {message.ServerCommandFrame}.");
@@ -81,7 +81,9 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
             if (Has<PlayerInputComponent>(entity))
             {
                 simulationState.LastReceivedServerCommandFrame = message.ServerCommandFrame;
-                simulationState.ServerReceivedClientCommandFrame = message.ServerReceivedClientCommandFrame;
+             
+                if (message.ServerReceivedClientCommandFrame > simulationState.ServerReceivedClientCommandFrame)
+                    simulationState.ServerReceivedClientCommandFrame = message.ServerReceivedClientCommandFrame;
 
                 if (simulationState.ServerReceivedClientCommandFrame > 0)
                 {
@@ -101,33 +103,5 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
                 }
             }
         }
-    }
-
-    /// <summary>
-    /// Checks to see if the packet just received is valid.
-    /// <para>
-    /// Due to the way UDP works, it could be old, duplicated, etc
-    /// </para>
-    /// </summary>
-    /// <param name="justReceivedServerCommandFrame">The CommandFrame on the server this packet is for.</param>
-    /// <param name="lastReceivedServerCommandFrame">The CommandFrame of the most recent packet received by us (the client).</param>
-    /// <returns></returns>
-    static bool IsValidPacket(uint justReceivedServerCommandFrame, uint lastReceivedServerCommandFrame)
-    {
-        if (justReceivedServerCommandFrame < lastReceivedServerCommandFrame)
-        {
-            // Discard packet
-            Logger.Warning($"Received an old packet from server for sequence: {justReceivedServerCommandFrame}. Client has already received state for sequence: {lastReceivedServerCommandFrame}.");
-            return false;
-        }
-        //HACK: Remove this when the server creates the state proper!
-        else if (false && justReceivedServerCommandFrame == lastReceivedServerCommandFrame)
-        {
-            // Duplicate packet?
-            Logger.Warning($"Received a duplicate packet from server for sequence: {justReceivedServerCommandFrame}.");
-            return false;
-        }
-
-        return true;
     }
 }

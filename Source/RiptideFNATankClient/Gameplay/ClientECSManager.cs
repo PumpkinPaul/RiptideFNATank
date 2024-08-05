@@ -99,7 +99,7 @@ public class ClientECSManager
             // The following systems should be the same between client and server to get a consistent game.
 
             // Process the actions (e.g. do a jump, fire a gun, move forward, etc).
-            new PlayerActionsSystem(_world, isClient: true),
+            new PlayerActionsSystem(_world),
 
             // Turn directions into velocity!
             new DirectionalSpeedSystem(_world),

@@ -56,6 +56,7 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
 
             ref var simulationState = ref GetSingleton<SimulationStateComponent>();
             simulationState.InitialServerCommandFrame = message.InitialServerCommandFrame;
+            simulationState.LastReceivedServerCommandFrame = simulationState.InitialServerCommandFrame;
 
             Logger.Success($"Player joined server on InitialServerCommandFrame: {message.InitialServerCommandFrame}. CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}");
 
@@ -67,6 +68,7 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
             // TODO: dynamically calculate this.
             uint halfRTTInCommandFrame = 2;
             simulationState.CurrentClientCommandFrame = message.InitialServerCommandFrame + NetworkSettings.COMMAND_BUFFER_SIZE + halfRTTInCommandFrame;
+            simulationState.ServerReceivedClientCommandFrame = simulationState.CurrentClientCommandFrame - 1;
 
             Logger.Success($"Fixed command buffer size is: {NetworkSettings.COMMAND_BUFFER_SIZE} command frames");
             Logger.Success($"Half RTT esitmate is: {halfRTTInCommandFrame} command frames");

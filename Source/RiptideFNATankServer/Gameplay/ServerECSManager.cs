@@ -19,6 +19,7 @@ using RiptideFNATankServer.Gameplay.Renderers;
 using RiptideFNATankServer.Gameplay.Systems;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
+using Wombat.Engine.Collections;
 using Wombat.Engine.Extensions;
 using static RiptideFNATankServer.Networking.ServerNetworkManager;
 
@@ -35,14 +36,14 @@ public class ServerECSManager
 {
     readonly World _world;
 
-    //Systems
+    // Systems
     readonly MoonTools.ECS.System[] _systems;
 
-    //Renderers
+    // Renderers
     readonly SpriteRenderer _spriteRenderer;
     readonly SpriteBatch _spriteBatch;
 
-    //Mapping between networking and ECS
+    // Mapping between networking and ECS
     readonly PlayerEntityMapper _playerEntityMapper = new();
     readonly ServerNetworkManager _networkGameManager;
 
@@ -50,11 +51,9 @@ public class ServerECSManager
     readonly Queue<ClientPlayerActionsReceivedMessage> _queuedClientStateMessages = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
 
-    // This is possibly temp while I try to figure this stuff out
-    // Master gamestate
-    // Player snapshots
-    // Dummy gamestate
+    // T 
     readonly Dictionary<ushort, uint> _clientAcks = [];
+    readonly Dictionary<ushort, PriorityQueue<ClientPlayerActions, uint>> _clientPlayerActions = [];
 
     public ServerECSManager(
         ServerNetworkManager networkGameManager,
@@ -70,17 +69,21 @@ public class ServerECSManager
         _world.Set(_world.CreateEntity(), new SimulationStateComponent());
 
         _systems = [
-            // PlayerActions have been received from client
-            new ClientPlayerActionsReceivedSystem(_world, _clientAcks),
-
-            //Spawn the entities into the game world
+            // Spawn the entities into the game world
             new PlayerSpawnSystem(_world, _playerEntityMapper),
+
+            // PlayerActions have been received from client...
+            new ClientPlayerActionsReceivedSystem(_world, _clientAcks, _clientPlayerActions),
+
+            // ...process buffered commands and set the action for the correct command frame.
+            new ProcessBufferClientPlayerActionsSystem(_world, _playerEntityMapper, _clientPlayerActions),
 
             // ====================================================================================================
             // World Simulation Start
             // The following systems should be the same between client and server to get a consistent game
 
-            new PlayerActionsSystem(_world, isClient: false), //...then process the actions (e.g. do a jump, fire a gun, etc)
+            // Process the actions (e.g. do a jump, fire a gun, move forward, etc).
+            new PlayerActionsSystem(_world),
 
             // Turn directions into velocity!
             new DirectionalSpeedSystem(_world),
@@ -114,7 +117,7 @@ public class ServerECSManager
 
         _playerEntityMapper.RemovePlayerByClientId(clientId);
 
-        //Queue entity to begin lerping to the corrected position.
+        // Queue entity to begin lerping to the corrected position.
         _destroyEntityMessage.Enqueue(new DestroyEntityMessage(
             Entity: entity
         ));
@@ -152,11 +155,11 @@ public class ServerECSManager
     public void Draw()
     {
         _spriteBatch.BeginTextRendering();
-        //_spriteBatch.Begin();
+        // _spriteBatch.Begin();
 
-        //Draw the world
+        // Draw the world
 
-        //...all the entities
+        // ...all the entities
         _spriteRenderer.Draw();
 
         _spriteBatch.DrawText(Resources.GameFont, "SERVER", new Vector2(BaseGame.SCREEN_WIDTH * 0.5f, BaseGame.SCREEN_HEIGHT - 48), Color.Black, Alignment.Centre);

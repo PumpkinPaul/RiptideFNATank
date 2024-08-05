@@ -13,6 +13,8 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using MoonTools.ECS;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Networking;
+using Wombat.Engine.Collections;
 
 namespace RiptideFNATankServer.Gameplay.Systems;
 
@@ -34,13 +36,16 @@ public readonly record struct ClientPlayerActionsReceivedMessage(
 public sealed class ClientPlayerActionsReceivedSystem : MoonTools.ECS.System
 {
     readonly Dictionary<ushort, uint> _clientAcks;
+    readonly Dictionary<ushort, PriorityQueue<ClientPlayerActions, uint>> _clientPlayerActions;
 
     public ClientPlayerActionsReceivedSystem(
         World world,
-        Dictionary<ushort, uint> clientAcks
+        Dictionary<ushort, uint> clientAcks,
+        Dictionary<ushort, PriorityQueue<ClientPlayerActions, uint>> clientPlayerActions
     ) : base(world)
     {
         _clientAcks = clientAcks;
+        _clientPlayerActions = clientPlayerActions;
     }
 
     public override void Update(TimeSpan delta)
@@ -52,26 +57,48 @@ public sealed class ClientPlayerActionsReceivedSystem : MoonTools.ECS.System
 
             var lastReceivedClientCommandFrame = _clientAcks[message.ClientId];
 
-            // Ensure the new state > the last state received
-            if (message.CurrentClientCommandFrame < lastReceivedClientCommandFrame)
-            {
-                // Discard packet
-                Logger.Warning($"Received an old packet from client for CurrentClientCommandFrame: {message.CurrentClientCommandFrame}. Client has already received state for CommandFrame: {lastReceivedClientCommandFrame}.");
-            }
-            else if (message.CurrentClientCommandFrame == lastReceivedClientCommandFrame)
-            {
-                // Duplicate packet?
-                Logger.Warning($"Received a duplicate packet from client for CurrentClientCommandFrame: {message.CurrentClientCommandFrame}.");
-            }
-            else //else if (newState.sequence > lastState.sequence)
-            {
-                _clientAcks[message.ClientId] = message.CurrentClientCommandFrame;
+            if (UDPHelper.IsValidPacket(message.CurrentClientCommandFrame, lastReceivedClientCommandFrame) == false)
+                continue;
 
-                ref var playerActions = ref Get<PlayerActionsComponent>(message.Entity);
-                Set(message.Entity, new PlayerActionsComponent(message.MoveUp, message.MoveDown));
+            CacheLatestCommandFrame(message);
+            CacheClientPlayerActions(message);
 
-                Logger.Info($"Got inputs from client for CurrentClientCommandFrame: {message.CurrentClientCommandFrame}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
-            }
+            Logger.Info($"Got inputs from client for CurrentClientCommandFrame: {message.CurrentClientCommandFrame}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
         }
+    }
+
+    /// <summary>
+    /// Saves the 'most recent' command frame sent from the server for a player.
+    /// <para>
+    /// The data structure will help us determine if out of date / duplicate packets have been received.
+    /// </para>
+    /// </summary>
+    /// <param name="message"></param>
+    private void CacheLatestCommandFrame(ClientPlayerActionsReceivedMessage message)
+    {
+        _clientAcks[message.ClientId] = message.CurrentClientCommandFrame;
+    }
+
+    /// <summary>
+    /// Saves the player actions from clients. 
+    /// <para>
+    /// These player actions will be fed into the simulation to move all the players.
+    /// </para>
+    /// </summary>
+    private void CacheClientPlayerActions(ClientPlayerActionsReceivedMessage message)
+    {
+        // Save the player actions from the client in the buffer.
+        if (_clientPlayerActions.ContainsKey(message.ClientId) == false)
+            _clientPlayerActions[message.ClientId] = new();
+
+        _clientPlayerActions[message.ClientId].Enqueue(
+            new ClientPlayerActions
+            {
+                ClientCommandFrame = message.CurrentClientCommandFrame,
+                MoveUp = message.MoveUp,
+                MoveDown = message.MoveDown
+            },
+            message.CurrentClientCommandFrame
+        );
     }
 }
