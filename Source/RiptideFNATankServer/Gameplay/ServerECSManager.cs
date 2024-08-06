@@ -13,13 +13,13 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankCommon.Systems;
 using RiptideFNATankServer.Gameplay.Renderers;
 using RiptideFNATankServer.Gameplay.Systems;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
-using Wombat.Engine.Collections;
 using Wombat.Engine.Extensions;
 using static RiptideFNATankServer.Networking.ServerNetworkManager;
 
@@ -125,18 +125,20 @@ public class ServerECSManager
 
     public void Update(GameTime gameTime)
     {
+        // How do we feel about this being outside of a system?
+        ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
+
+        Logger.Success($"Command Frame: {simulationState.CurrentServerCommandFrame}");
+
         SendAllQueuedECSMessages();
 
         foreach (var system in _systems)
             system.Update(gameTime.ElapsedGameTime);
 
-        // How do we feel about this being outside of a system?
-        ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
-        simulationState.CurrentServerCommandFrame++;
-
-        ServerGame.ServerCommandFrame = simulationState.CurrentServerCommandFrame;
-
         _world.FinishUpdate();
+
+        simulationState.CurrentServerCommandFrame++;
+        ServerGame.ServerCommandFrame = simulationState.CurrentServerCommandFrame;
     }
 
     private void SendAllQueuedECSMessages()

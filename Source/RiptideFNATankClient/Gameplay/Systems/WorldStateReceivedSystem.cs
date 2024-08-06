@@ -57,21 +57,15 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
     public override void Update(TimeSpan delta)
     {
-        // TODO: I think we need to buffer these to avoid jitter.
-        var span = ReadMessages<ReceivedWorldStateMessage>();
-        if (span.Length > 1)
-        {
-            Logger.Warning($"Received multiple server messages");
-        }
-
         ref var simulationState = ref GetSingleton<SimulationStateComponent>();
 
-        foreach (var message in span)
+        // TODO: I think we need to buffer these to avoid jitter.
+        foreach (var message in ReadMessages<ReceivedWorldStateMessage>())
         {
             if (UDPHelper.IsValidPacket(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame) == false)
                 continue;
 
-            //Logger.Info($"Received a valid packet from server for sequence: {message.ServerCommandFrame}.");
+            Logger.Info($"Received a valid packet from server for sequence: {message.ServerCommandFrame}.");
 
             var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
@@ -80,18 +74,16 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
 
             if (Has<PlayerInputComponent>(entity))
             {
-                simulationState.LastReceivedServerCommandFrame = message.ServerCommandFrame;
+                simulationState.LastReceivedServerCommandFrame = Math.Max(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame);
+                simulationState.ServerReceivedClientCommandFrame = Math.Max(message.ServerReceivedClientCommandFrame, message.ServerReceivedClientCommandFrame);
 
-                if (message.ServerReceivedClientCommandFrame > simulationState.ServerReceivedClientCommandFrame)
-                    simulationState.ServerReceivedClientCommandFrame = message.ServerReceivedClientCommandFrame;
-
-                if (simulationState.ServerReceivedClientCommandFrame < simulationState.InitialClientCommandFrame)
+                if (simulationState.LastReceivedServerCommandFrame < simulationState.InitialClientCommandFrame)
                     continue;
 
                 var serverPlayerState = new ServerPlayerState(message.Position);
-                var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerReceivedClientCommandFrame, serverPlayerState);
+                var idx = _serverPlayerStateSnapshots.Set(simulationState.LastReceivedServerCommandFrame, serverPlayerState);
 
-                Logger.Info($"Got server state for ServerReceivedClientCommandFrame: {simulationState.ServerReceivedClientCommandFrame}, resolves to idx: {idx}, CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}, Position: {serverPlayerState.Position}");
+                Logger.Info($"{nameof(WorldStateReceivedSystem)}: Got server state for command frame: {simulationState.LastReceivedServerCommandFrame} (idx: {idx}), Position: {serverPlayerState.Position}");
             }
             else
             {

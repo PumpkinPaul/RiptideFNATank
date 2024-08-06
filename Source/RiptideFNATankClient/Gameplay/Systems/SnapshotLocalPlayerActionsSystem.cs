@@ -10,8 +10,8 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 using System;
@@ -45,9 +45,6 @@ public sealed class SnapshotLocalPlayerActionsSystem : MoonTools.ECS.System
     {
         ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
 
-        if (simulationState.ServerReceivedClientCommandFrame == 0)
-            return;
-
         foreach (var entity in _filter.Entities)
         {
             ref readonly var playerActions = ref Get<PlayerActionsComponent>(entity);
@@ -56,6 +53,8 @@ public sealed class SnapshotLocalPlayerActionsSystem : MoonTools.ECS.System
             // ...so that we have a store of inputs we can send to the server to protect against packet loss
             // ...a stream of actions that we can use to replay client inputs when reconciling state updates (server disagress with predicted client state)
             _playerActions.Set(simulationState.CurrentClientCommandFrame, playerActions);
+
+            Logger.Info($"{nameof(SnapshotLocalPlayerActionsSystem)}: Wrote local commands for command frame: {simulationState.CurrentClientCommandFrame}, MoveUp: {playerActions.MoveUp}, MoveDown: {playerActions.MoveDown}");
         }
     }
 }

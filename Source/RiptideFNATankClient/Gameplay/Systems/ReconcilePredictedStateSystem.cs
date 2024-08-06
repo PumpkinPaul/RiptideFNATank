@@ -51,19 +51,19 @@ public sealed class ReconcilePredictedStateSystem : MoonTools.ECS.System
 
         // Wait for the server to catch up with the initially predicted client command frame.
         // There won't be any snapshots written before that epoch.
-        if (simulationState.ServerReceivedClientCommandFrame < simulationState.InitialClientCommandFrame)
-            return;
+        //if (simulationState.LastReceivedServerCommandFrame < simulationState.InitialClientCommandFrame)
+        //    return;
 
         foreach (var entity in _filter.Entities)
         {
-            var predictedState = _localPlayerStateSnapshots.Get(simulationState.ServerReceivedClientCommandFrame);
-            var serverState = _serverPlayerStateSnapshots.Get(simulationState.ServerReceivedClientCommandFrame);
+            var predictedState = _localPlayerStateSnapshots.Get(simulationState.LastReceivedServerCommandFrame);
+            var serverState = _serverPlayerStateSnapshots.Get(simulationState.LastReceivedServerCommandFrame);
 
             // TODO: the prediction / snapshot looks to be out by 1!
             if (predictedState.Position != serverState.Position)
             {
                 // TODO: Reconcile and replay the local input
-                Logger.Error($"Local client prediction error at ServerReceivedClientCommandFrame: {simulationState.ServerReceivedClientCommandFrame}");
+                Logger.Error($"Local client prediction error at command frame: {simulationState.LastReceivedServerCommandFrame}");
                 Logger.Warning($"Predicted position: {predictedState.Position} vs actual position: {serverState.Position}");
             }
         }

@@ -11,6 +11,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 */
 
 using MoonTools.ECS;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 
@@ -60,6 +61,7 @@ public sealed class ProcessBufferClientPlayerActionsSystem : MoonTools.ECS.Syste
             if (playerActionsQueue.Count == 0)
             {
                 // TODO: we probably need to stamp the outgoing state with a 'no input increase client sim tick rate' flag
+                Logger.Warning($"{nameof(ProcessBufferClientPlayerActionsSystem)}: Ran out of client commands on command frame: {simulationState.CurrentServerCommandFrame}");
                 continue;
             }
 
@@ -77,6 +79,8 @@ public sealed class ProcessBufferClientPlayerActionsSystem : MoonTools.ECS.Syste
 
             // The buffered actions are for this command frame - apply them to the entity state
             Set(entity, new PlayerActionsComponent(bufferedPlayerActions.MoveUp, bufferedPlayerActions.MoveDown));
+
+            Logger.Debug($"{nameof(ProcessBufferClientPlayerActionsSystem)}: Applied buffered client commands - bufferedPlayerActions: {bufferedPlayerActions}");
         }
     }
 }

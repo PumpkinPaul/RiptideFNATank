@@ -105,7 +105,7 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             // Send a network packet containing all the world state to a single player
             _networkGameManager.SendMessage(message, clientId);
 
-            Logger.Info($"Send server state for serverCommandFrame: {serverCommandFrame}, clientCommandFrame: {clientCommandFrame}, position: {p}");
+            Logger.Info($"{nameof(SendNetworkWorldStateSystem)}: Send server state for command frame: {serverCommandFrame}, position: {p}");
         }
     }
 }

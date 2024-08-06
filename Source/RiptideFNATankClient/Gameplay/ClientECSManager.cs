@@ -16,6 +16,7 @@ using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Renderers;
 using RiptideFNATankClient.Gameplay.Systems;
 using RiptideFNATankClient.Networking;
+using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankCommon.Systems;
@@ -181,16 +182,19 @@ public class ClientECSManager
 
     public void Update(GameTime gameTime)
     {
+        // How do we feel about this being outside of a system?
+        ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
+
+        Logger.Success($"Command Frame: {simulationState.CurrentClientCommandFrame}");
+
         SendAllQueuedMessages();
 
         foreach (var system in _systems)
             system.Update(BaseGame.Instance.TargetElapsedTime);
 
-        // How do we feel about this being outside of a system?
-        ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
-        simulationState.CurrentClientCommandFrame++;
-
         _world.FinishUpdate();
+
+        simulationState.CurrentClientCommandFrame++;
     }
 
     private void SendAllQueuedMessages()

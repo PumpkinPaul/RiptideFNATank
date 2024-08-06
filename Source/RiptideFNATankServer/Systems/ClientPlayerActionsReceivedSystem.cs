@@ -49,7 +49,7 @@ public sealed class ClientPlayerActionsReceivedSystem : MoonTools.ECS.System
     {
         foreach (var message in ReadMessages<ClientPlayerActionsReceivedMessage>())
         {
-            Logger.Info($"Got inputs from client for CurrentClientCommandFrame: {message.EffectiveClientCommandFrame}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
+            Logger.Info($"{nameof(ClientPlayerActionsReceivedSystem)}: Got inputs from client for command frame: {message.EffectiveClientCommandFrame}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
 
             if (_clientAcks.ContainsKey(message.ClientId) == false)
                 _clientAcks[message.ClientId] = new();

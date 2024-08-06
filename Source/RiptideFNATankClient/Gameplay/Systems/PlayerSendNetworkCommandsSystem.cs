@@ -77,7 +77,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
             message.AddUInt(simulationState.CurrentClientCommandFrame);
             message.AddByte((byte)commandCount);
 
-            Logger.Info($"Send client commands to server - ServerReceivedClientCommandFrame {simulationState.ServerReceivedClientCommandFrame}, CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}, commandCount: {commandCount}");
+           Logger.Info($"{nameof(PlayerSendNetworkCommandsSystem)}: Send client commands to server for command frame: {simulationState.CurrentClientCommandFrame}, commandCount: {commandCount}");
 
             for (uint clientCommandFrame = simulationState.ServerReceivedClientCommandFrame + 1; clientCommandFrame <= simulationState.CurrentClientCommandFrame; clientCommandFrame++)
             {
