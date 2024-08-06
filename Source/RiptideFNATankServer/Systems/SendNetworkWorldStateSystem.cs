@@ -92,15 +92,20 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             // All players
             // - the 'local' player (when the client gets the message)
             // - al the other remote players
+            Vector2 p = Vector2.Zero;
             foreach (var player in _worldState)
             {
                 var position = _worldState[player.Key];
                 message.AddUShort(player.Key);
                 message.AddVector2(position);
+
+                p = position;
             }
 
             // Send a network packet containing all the world state to a single player
             _networkGameManager.SendMessage(message, clientId);
+
+            Logger.Info($"Send server state for serverCommandFrame: {serverCommandFrame}, clientCommandFrame: {clientCommandFrame}, position: {p}");
         }
     }
 }

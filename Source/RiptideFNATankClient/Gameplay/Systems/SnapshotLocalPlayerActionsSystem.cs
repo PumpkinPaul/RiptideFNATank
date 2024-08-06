@@ -45,6 +45,9 @@ public sealed class SnapshotLocalPlayerActionsSystem : MoonTools.ECS.System
     {
         ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
 
+        if (simulationState.ServerReceivedClientCommandFrame == 0)
+            return;
+
         foreach (var entity in _filter.Entities)
         {
             ref readonly var playerActions = ref Get<PlayerActionsComponent>(entity);

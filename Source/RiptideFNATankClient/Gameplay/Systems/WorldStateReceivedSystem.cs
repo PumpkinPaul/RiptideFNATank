@@ -81,17 +81,17 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
             if (Has<PlayerInputComponent>(entity))
             {
                 simulationState.LastReceivedServerCommandFrame = message.ServerCommandFrame;
-             
+
                 if (message.ServerReceivedClientCommandFrame > simulationState.ServerReceivedClientCommandFrame)
                     simulationState.ServerReceivedClientCommandFrame = message.ServerReceivedClientCommandFrame;
 
-                if (simulationState.ServerReceivedClientCommandFrame > 0)
-                {
-                    var serverPlayerState = new ServerPlayerState(message.Position);
-                    var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerReceivedClientCommandFrame, serverPlayerState);
+                if (simulationState.ServerReceivedClientCommandFrame < simulationState.InitialClientCommandFrame)
+                    continue;
 
-                    Logger.Info($"Wrote server state snpshot for ServerReceivedClientCommandFrame: {simulationState.ServerReceivedClientCommandFrame}, resolves to idx: {idx}, CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}, Position: {serverPlayerState.Position}");
-                }
+                var serverPlayerState = new ServerPlayerState(message.Position);
+                var idx = _serverPlayerStateSnapshots.Set(simulationState.ServerReceivedClientCommandFrame, serverPlayerState);
+
+                Logger.Info($"Got server state for ServerReceivedClientCommandFrame: {simulationState.ServerReceivedClientCommandFrame}, resolves to idx: {idx}, CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}, Position: {serverPlayerState.Position}");
             }
             else
             {

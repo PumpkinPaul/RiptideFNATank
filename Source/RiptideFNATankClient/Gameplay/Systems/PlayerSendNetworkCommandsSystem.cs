@@ -51,6 +51,8 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
             return;
 
         ref readonly var simulationState = ref GetSingleton<SimulationStateComponent>();
+        if (simulationState.ServerReceivedClientCommandFrame == 0)
+            return;
 
         foreach (var entity in _filter.Entities)
         {
@@ -83,6 +85,8 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
                 var playerActions = _playerActions.Get(clientCommandFrame);
                 message.AddBool(playerActions.MoveUp);
                 message.AddBool(playerActions.MoveDown);
+
+                Logger.Debug($"Effective frame: {clientCommandFrame}, moveUp: {playerActions.MoveUp}, moveDown: {playerActions.MoveDown}");
             }
 
             // Send a network packet containing the player's state.
