@@ -37,11 +37,11 @@ public class ServerNetworkManager
 
     public event Action<ClientConnectedArgs> ClientConnected;
 
-    public readonly record struct ClientPlayerActionsArgs(
+    public readonly record struct ClientPlayerCommandsArgs(
         ushort ClientId,
         Message Message);
 
-    public event Action<ClientPlayerActionsArgs> ReceivedClientPlayerActions;
+    public event Action<ClientPlayerCommandsArgs> ReceivedPlayerCommands;
 
     public Server Server { get; private set; }
 
@@ -103,9 +103,9 @@ public class ServerNetworkManager
     }
 
     [MessageHandler((ushort)ClientMessageType.PlayerCommands)]
-    static void ReceivedClientPlayerActionsHandler(ushort clientId, Message message)
+    static void ReceivedPlayerCommandsHandler(ushort clientId, Message message)
     {
-        Instance.ReceivedClientPlayerActions?.Invoke(new ClientPlayerActionsArgs(clientId, message));
+        Instance.ReceivedPlayerCommands?.Invoke(new ClientPlayerCommandsArgs(clientId, message));
     }
 
     #endregion

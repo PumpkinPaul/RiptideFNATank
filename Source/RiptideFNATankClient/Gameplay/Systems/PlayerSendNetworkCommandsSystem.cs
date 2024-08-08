@@ -26,14 +26,14 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 /// </summary>
 public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
 {
-    readonly CircularBuffer<PlayerActionsComponent> _playerActions;
+    readonly CircularBuffer<PlayerCommandsComponent> _playerActions;
     readonly NetworkGameManager _networkGameManager;
 
     readonly Filter _filter;
 
     public PlayerSendNetworkCommandsSystem(
         World world,
-        CircularBuffer<PlayerActionsComponent> playerActions,
+        CircularBuffer<PlayerCommandsComponent> playerActions,
         NetworkGameManager networkGameManager
     ) : base(world)
     {
@@ -41,7 +41,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
         _networkGameManager = networkGameManager;
 
         _filter = FilterBuilder
-            .Include<PlayerActionsComponent>()
+            .Include<PlayerCommandsComponent>()
             .Build();
     }
 

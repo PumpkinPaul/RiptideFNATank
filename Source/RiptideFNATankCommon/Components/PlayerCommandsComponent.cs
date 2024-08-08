@@ -12,7 +12,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 namespace RiptideFNATankCommon.Components;
 
-public readonly record struct PlayerActionsComponent(
+public readonly record struct PlayerCommandsComponent(
     bool MoveUp,
     bool MoveDown
 );

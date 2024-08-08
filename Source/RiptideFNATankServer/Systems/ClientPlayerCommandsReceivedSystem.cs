@@ -17,7 +17,7 @@ using RiptideFNATankServer.Gameplay;
 
 namespace RiptideFNATankServer.Systems;
 
-public readonly record struct ClientPlayerActionsReceivedMessage(
+public readonly record struct PlayerCommandsReceivedMessage(
     ushort ClientId,
     Entity Entity,
     byte GameId,
@@ -32,29 +32,29 @@ public readonly record struct ClientPlayerActionsReceivedMessage(
 /// <summary>
 /// 
 /// </summary>
-public sealed class ClientPlayerActionsReceivedSystem : MoonTools.ECS.System
+public sealed class ClientPlayerCommandsReceivedSystem : MoonTools.ECS.System
 {
     readonly Dictionary<ushort, uint> _clientAcks;
-    readonly Dictionary<ushort, CommandsBuffer> _clientPlayerActions;
+    readonly Dictionary<ushort, CommandsBuffer> _clientPlayerCommands;
 
-    public ClientPlayerActionsReceivedSystem(
+    public ClientPlayerCommandsReceivedSystem(
         World world,
         Dictionary<ushort, uint> clientAcks,
-        Dictionary<ushort, CommandsBuffer> clientPlayerActions
+        Dictionary<ushort, CommandsBuffer> clientPlayerCommands
     ) : base(world)
     {
         _clientAcks = clientAcks;
-        _clientPlayerActions = clientPlayerActions;
+        _clientPlayerCommands = clientPlayerCommands;
     }
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<ClientPlayerActionsReceivedMessage>())
+        foreach (var message in ReadMessages<PlayerCommandsReceivedMessage>())
         {
-            Logger.Info($"{nameof(ClientPlayerActionsReceivedSystem)}: Got inputs from client for command frame: {message.EffectiveClientCommandFrame}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
+            Logger.Info($"{nameof(ClientPlayerCommandsReceivedSystem)}: Got inputs from client for command frame: {message.EffectiveClientCommandFrame}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
 
             CacheLatestCommandFrame(message);
-            CacheClientPlayerActions(message);
+            CacheClientPlayerCommands(message);
         }
     }
 
@@ -65,7 +65,7 @@ public sealed class ClientPlayerActionsReceivedSystem : MoonTools.ECS.System
     /// </para>
     /// </summary>
     /// <param name="message"></param>
-    private void CacheLatestCommandFrame(ClientPlayerActionsReceivedMessage message)
+    private void CacheLatestCommandFrame(PlayerCommandsReceivedMessage message)
     {
         if (_clientAcks.ContainsKey(message.ClientId) == false)
             _clientAcks[message.ClientId] = new();
@@ -74,21 +74,21 @@ public sealed class ClientPlayerActionsReceivedSystem : MoonTools.ECS.System
     }
 
     /// <summary>
-    /// Saves the player actions from clients. 
+    /// Saves the player commands from clients. 
     /// <para>
-    /// These player actions will be fed into the simulation to move all the players.
+    /// These player commands will be fed into the simulation to move all the players.
     /// </para>
     /// </summary>
-    private void CacheClientPlayerActions(ClientPlayerActionsReceivedMessage message)
+    private void CacheClientPlayerCommands(PlayerCommandsReceivedMessage message)
     {
-        // Save the player actions from the client in the buffer.
-        if (_clientPlayerActions.ContainsKey(message.ClientId) == false)
-            _clientPlayerActions[message.ClientId] = new();
+        // Save the player commands from the client in the buffer.
+        if (_clientPlayerCommands.ContainsKey(message.ClientId) == false)
+            _clientPlayerCommands[message.ClientId] = new();
 
-        var playerActions = new PlayerActionsComponent(
+        var playerCommands = new PlayerCommandsComponent(
             MoveUp: message.MoveUp,
             MoveDown: message.MoveDown);
 
-        _clientPlayerActions[message.ClientId].Add(message.EffectiveClientCommandFrame, playerActions);
+        _clientPlayerCommands[message.ClientId].Add(message.EffectiveClientCommandFrame, playerCommands);
     }
 }

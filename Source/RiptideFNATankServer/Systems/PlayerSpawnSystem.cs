@@ -46,7 +46,7 @@ public class PlayerSpawnSystem : MoonTools.ECS.System
 
             _playerEntityMapper.AddPlayer(message.ClientId, entity);
 
-            Set(entity, new PlayerActionsComponent());
+            Set(entity, new PlayerCommandsComponent());
             Set(entity, new PositionComponent(message.Position));
             Set(entity, new ScaleComponent(new Vector2(16, 64)));
             Set(entity, new ColorComponent(message.Color));

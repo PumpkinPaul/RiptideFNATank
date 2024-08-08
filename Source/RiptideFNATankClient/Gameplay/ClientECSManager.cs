@@ -47,7 +47,7 @@ public class ClientECSManager
     // Snapshot buffers for input and state used for prediction & replay.
     
     // A buffer of client inputs
-    readonly CircularBuffer<PlayerActionsComponent> _localPlayerActionsSnapshots = new(1024);
+    readonly CircularBuffer<PlayerCommandsComponent> _localPlayerActionsSnapshots = new(1024);
 
     // Predicted client state - client writes this after simulation so that it can be verified with the server state.
     readonly CircularBuffer<LocalPlayerPredictedState> _localPlayerStateSnapshots = new (1024);
@@ -93,14 +93,14 @@ public class ClientECSManager
 
             // Get input from devices and turn into game actions.
             new PlayerInputSystem(_world),
-            new SnapshotLocalPlayerActionsSystem(_world, _localPlayerActionsSnapshots),
+            new SnapshotLocalPlayerCommandsSystem(_world, _localPlayerActionsSnapshots),
             
             // ====================================================================================================
             // World Simulation Start
             // The following systems should be the same between client and server to get a consistent game.
 
             // Process the actions (e.g. do a jump, fire a gun, move forward, etc).
-            new PlayerActionsSystem(_world),
+            new ProcessPlayerCommandsSystem(_world),
 
             // Turn directions into velocity!
             new DirectionalSpeedSystem(_world),

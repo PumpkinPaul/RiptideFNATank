@@ -48,7 +48,7 @@ public sealed class PlayerInputSystem : MoonTools.ECS.System
             var moveUp = keyBoardState.IsKeyDown(playerInput.MoveUpKey);
             var moveDown = keyBoardState.IsKeyDown(playerInput.MoveDownKey);
 
-            var playerActions = new PlayerActionsComponent(
+            var playerActions = new PlayerCommandsComponent(
                 moveUp,
                 moveDown);
 

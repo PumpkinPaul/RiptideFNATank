@@ -69,7 +69,7 @@ public class ServerGame : BaseGame
         _ecsManager = new ServerECSManager(_networkGameManager, SpriteBatch);
 
         _networkGameManager.ClientConnected += ClientConnectedHandler;
-        _networkGameManager.ReceivedClientPlayerActions += _ecsManager.ClientPlayerActionsReceivedHandler;
+        _networkGameManager.ReceivedPlayerCommands += _ecsManager.PlayerCommandsReceivedHandler;
 
         _networkGameManager.StartServer();
     }

@@ -21,24 +21,24 @@ namespace RiptideFNATankServer.Systems;
 /// <summary>
 /// 
 /// </summary>
-public sealed class ProcessBufferClientPlayerActionsSystem : MoonTools.ECS.System
+public sealed class ApplyBufferedPlayerCommandsSystem : MoonTools.ECS.System
 {
     readonly PlayerEntityMapper _playerEntityMapper;
-    readonly Dictionary<ushort, CommandsBuffer> _clientPlayerActionsBuffer;
+    readonly Dictionary<ushort, CommandsBuffer> _clientPlayerCommandsBuffer;
 
     readonly Filter _filter;
 
-    public ProcessBufferClientPlayerActionsSystem(
+    public ApplyBufferedPlayerCommandsSystem(
         World world,
         PlayerEntityMapper playerEntityMapper,
-        Dictionary<ushort, CommandsBuffer> clientPlayerActionsBuffer
+        Dictionary<ushort, CommandsBuffer> clientPlayerCommandsBuffer
     ) : base(world)
     {
         _playerEntityMapper = playerEntityMapper;
-        _clientPlayerActionsBuffer = clientPlayerActionsBuffer;
+        _clientPlayerCommandsBuffer = clientPlayerCommandsBuffer;
 
         _filter = FilterBuilder
-            .Include<PlayerActionsComponent>()
+            .Include<PlayerCommandsComponent>()
             .Build();
     }
 
@@ -53,13 +53,18 @@ public sealed class ProcessBufferClientPlayerActionsSystem : MoonTools.ECS.Syste
             if (clientId == PlayerEntityMapper.INVALID_CLIENT_ID)
                 continue;
 
-            if (_clientPlayerActionsBuffer.TryGetValue(clientId, out var playerActionsQueue) == false)
+            if (_clientPlayerCommandsBuffer.TryGetValue(clientId, out var playerCommandsBuffer) == false)
                 continue;
 
-            var playerActions = playerActionsQueue.Remove(simulationState.CurrentServerCommandFrame);
-            Set(entity, playerActions);
+            // Remove any old command frame commands
+            // e.g. if we have commands for frames 3, 4, 5, 6 in the buffer and we are at frame 5 now, remove commands for frames 3 and 5
+            playerCommandsBuffer.RemoveOldCommands(simulationState.CurrentServerCommandFrame);
 
-            Logger.Debug($"{nameof(ProcessBufferClientPlayerActionsSystem)}: Applied buffered client commands for command frame :{simulationState.CurrentServerCommandFrame} - {playerActions}");
+            // Get the commands to apply this frame - will either be what the client sent or the last used commands if the buffer has run dry.
+            var playerCommands = playerCommandsBuffer.Get(simulationState.CurrentServerCommandFrame);
+            Set(entity, playerCommands);
+
+            Logger.Debug($"{nameof(ApplyBufferedPlayerCommandsSystem)}: Applied buffered player commands for command frame :{simulationState.CurrentServerCommandFrame} - {playerCommands}");
         }
     }
 }

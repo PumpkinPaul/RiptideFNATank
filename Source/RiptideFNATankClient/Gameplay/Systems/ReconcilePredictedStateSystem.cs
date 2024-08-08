@@ -23,7 +23,7 @@ namespace RiptideFNATankClient.Gameplay.Systems;
 /// </summary>
 public sealed class ReconcilePredictedStateSystem : MoonTools.ECS.System
 {
-    readonly CircularBuffer<PlayerActionsComponent> _localPlayerActionsSnapshots;
+    readonly CircularBuffer<PlayerCommandsComponent> _localPlayerActionsSnapshots;
     readonly CircularBuffer<LocalPlayerPredictedState> _localPlayerStateSnapshots;
     readonly CircularBuffer<ServerPlayerState> _serverPlayerStateSnapshots;
 
@@ -31,7 +31,7 @@ public sealed class ReconcilePredictedStateSystem : MoonTools.ECS.System
 
     public ReconcilePredictedStateSystem(
         World world,
-        CircularBuffer<PlayerActionsComponent> localPlayerActionsSnapshots,
+        CircularBuffer<PlayerCommandsComponent> localPlayerActionsSnapshots,
         CircularBuffer<LocalPlayerPredictedState> localPlayerStateSnapshots,
         CircularBuffer<ServerPlayerState> serverPlayerStateSnapshots
     ) : base(world)
@@ -41,7 +41,7 @@ public sealed class ReconcilePredictedStateSystem : MoonTools.ECS.System
         _serverPlayerStateSnapshots = serverPlayerStateSnapshots;
 
         _filter = FilterBuilder
-            .Include<PlayerActionsComponent>()
+            .Include<PlayerCommandsComponent>()
             .Build();
     }
 

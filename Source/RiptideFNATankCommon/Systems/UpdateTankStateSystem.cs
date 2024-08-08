@@ -31,8 +31,8 @@ public abstract class UpdateTankStateSystem : MoonTools.ECS.System
     {
         ref readonly var position = ref Get<PositionComponent>(entity);
 
-        var moveUpSpeed = paddleState.MoveUp ? PlayerActionsSystem.PADDLE_SPEED : 0;
-        var moveDownSpeed = paddleState.MoveDown ? -PlayerActionsSystem.PADDLE_SPEED : 0;
+        var moveUpSpeed = paddleState.MoveUp ? ProcessPlayerCommandsSystem.PADDLE_SPEED : 0;
+        var moveDownSpeed = paddleState.MoveDown ? -ProcessPlayerCommandsSystem.PADDLE_SPEED : 0;
 
         paddleState.Velocity = new Vector2(0, moveUpSpeed + moveDownSpeed);
 

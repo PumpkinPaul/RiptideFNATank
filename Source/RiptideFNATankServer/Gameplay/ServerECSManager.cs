@@ -48,12 +48,12 @@ public class ServerECSManager
     readonly ServerNetworkManager _networkGameManager;
 
     readonly Queue<PlayerSpawnMessage> _queuedPlayerSpawnMessages = new();
-    readonly Queue<ClientPlayerActionsReceivedMessage> _queuedClientStateMessages = new();
+    readonly Queue<PlayerCommandsReceivedMessage> _queuedPlayerCommandsMessages = new();
     readonly Queue<DestroyEntityMessage> _destroyEntityMessage = new();
 
     // T 
     readonly Dictionary<ushort, uint> _clientAcks = [];
-    readonly Dictionary<ushort, CommandsBuffer> _clientPlayerActions = [];
+    readonly Dictionary<ushort, CommandsBuffer> _clientPlayerCommands = [];
 
     public ServerECSManager(
         ServerNetworkManager networkGameManager,
@@ -72,18 +72,18 @@ public class ServerECSManager
             // Spawn the entities into the game world
             new PlayerSpawnSystem(_world, _playerEntityMapper),
 
-            // PlayerActions have been received from client...
-            new ClientPlayerActionsReceivedSystem(_world, _clientAcks, _clientPlayerActions),
+            // Cache any player commands that have been received from client...
+            new ClientPlayerCommandsReceivedSystem(_world, _clientAcks, _clientPlayerCommands),
 
-            // ...process buffered commands and set the action for the correct command frame.
-            new ProcessBufferClientPlayerActionsSystem(_world, _playerEntityMapper, _clientPlayerActions),
+            // ...process buffered commands and apply the commands for the current command frame.
+            new ApplyBufferedPlayerCommandsSystem(_world, _playerEntityMapper, _clientPlayerCommands),
 
             // ====================================================================================================
             // World Simulation Start
             // The following systems should be the same between client and server to get a consistent game
 
-            // Process the actions (e.g. do a jump, fire a gun, move forward, etc).
-            new PlayerActionsSystem(_world),
+            // Process the commands (e.g. do a jump, fire a gun, move forward, etc).
+            new ProcessPlayerCommandsSystem(_world),
 
             // Turn directions into velocity!
             new DirectionalSpeedSystem(_world),
@@ -144,7 +144,7 @@ public class ServerECSManager
     private void SendAllQueuedECSMessages()
     {
         SendMessages(_queuedPlayerSpawnMessages);
-        SendMessages(_queuedClientStateMessages);
+        SendMessages(_queuedPlayerCommandsMessages);
         SendMessages(_destroyEntityMessage);
     }
 
@@ -179,7 +179,7 @@ public class ServerECSManager
         ));
     }
 
-    public void ClientPlayerActionsReceivedHandler(ClientPlayerActionsArgs e)
+    public void PlayerCommandsReceivedHandler(ClientPlayerCommandsArgs e)
     {
         var entity = _playerEntityMapper.GetEntityFromClientId(e.ClientId);
 
@@ -201,7 +201,7 @@ public class ServerECSManager
             var moveDown = e.Message.GetBool();
 
             // Queue this new state from a client
-            _queuedClientStateMessages.Enqueue(new ClientPlayerActionsReceivedMessage(
+            _queuedPlayerCommandsMessages.Enqueue(new PlayerCommandsReceivedMessage(
                 e.ClientId,
                 entity,
                 gameId,

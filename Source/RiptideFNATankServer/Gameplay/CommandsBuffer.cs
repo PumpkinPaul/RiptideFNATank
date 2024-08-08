@@ -16,17 +16,17 @@ using RiptideFNATankCommon.Components;
 namespace RiptideFNATankServer.Gameplay;
 
 /// <summary>
-/// Responsible for storing player actions (commands) from a single client.
+/// Responsible for storing player commands from a single client.
 /// </summary>
 public class CommandsBuffer()
 {
     /// <summary>
-    /// Comparer for player actions in command buffer.
+    /// Comparer for player commands in command buffer.
     /// <para>Sorts by command frame, lower commands will be process first.</para>
     /// </summary>
-    class CommandsBufferComparer : IComparer<(uint CommandFrame, PlayerActionsComponent Actions)>
+    class CommandsBufferComparer : IComparer<(uint CommandFrame, PlayerCommandsComponent Commands)>
     {
-        public int Compare((uint CommandFrame, PlayerActionsComponent Actions) x, (uint CommandFrame, PlayerActionsComponent Actions) y)
+        public int Compare((uint CommandFrame, PlayerCommandsComponent Commands) x, (uint CommandFrame, PlayerCommandsComponent Commands) y)
         {
             return x.CommandFrame.CompareTo(y.CommandFrame);
         }
@@ -35,12 +35,12 @@ public class CommandsBuffer()
     /// <summary>
     /// A unique sorted set of all the command frames received for a player.
     /// </summary>
-    readonly SortedSet<(uint CommandFrame, PlayerActionsComponent Commands)> _playerActions = new(new CommandsBufferComparer());
+    readonly SortedSet<(uint CommandFrame, PlayerCommandsComponent Commands)> _playerCommandsBuffer = new(new CommandsBufferComparer());
 
     /// <summary>
     /// Gets the number of commands in the buffer.
     /// </summary>
-    public int Count => _playerActions.Count;
+    public int Count => _playerCommandsBuffer.Count;
 
     /// <summary>
     /// The player's previous commands will be returned if there are no commands for the current command frame in the buffer.
@@ -49,25 +49,28 @@ public class CommandsBuffer()
     /// e.g. if they are moving forward on frame 34 they are probably still moving forward on frame 35.
     /// </para>
     /// </summary>
-    PlayerActionsComponent _previousPlayerActions;
+    PlayerCommandsComponent _previousPlayerCommands;
 
-    public bool Add(uint effectiveCommandFrame, PlayerActionsComponent playerActions)
+    public bool Add(uint effectiveCommandFrame, PlayerCommandsComponent playerCommands)
     {
-        return _playerActions.Add((effectiveCommandFrame, playerActions));
+        return _playerCommandsBuffer.Add((effectiveCommandFrame, playerCommands));
     }
 
-    public PlayerActionsComponent Remove(uint currentCommandFrame)
+    public void RemoveOldCommands(uint currentCommandFrame)
     {
         // Remove any old command frames
-        _playerActions.RemoveWhere(p => p.CommandFrame < currentCommandFrame);
+        _playerCommandsBuffer.RemoveWhere(p => p.CommandFrame < currentCommandFrame);
+    }
 
-        if (_playerActions.Count == 0)
+    public PlayerCommandsComponent Get(uint currentCommandFrame)
+    {
+        if (_playerCommandsBuffer.Count == 0)
         {
             Logger.Warning("CommandBuffer is empty");
-            return _previousPlayerActions;
+            return _previousPlayerCommands;
         }
 
-        var min = _playerActions.Min;
+        var min = _playerCommandsBuffer.Min;
         var (EffectiveCommandFrame, Commands) = min;
 
         // Return the previous command if we don't have a command for the current command frame.
@@ -75,12 +78,12 @@ public class CommandsBuffer()
         if (EffectiveCommandFrame > currentCommandFrame)
         {
             Logger.Warning("CommandBuffer only has future commands");
-            return _previousPlayerActions;
+            return _previousPlayerCommands;
         }
 
         // Cache the command to return so that it can be returned again for situations when the CommandBuffer doesn't contain enough commands.
-        _previousPlayerActions = Commands;
-        _playerActions.Remove(min);
+        _previousPlayerCommands = Commands;
+        _playerCommandsBuffer.Remove(min);
         return Commands;
     }
 }
