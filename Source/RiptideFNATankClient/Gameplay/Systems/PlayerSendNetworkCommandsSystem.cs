@@ -14,7 +14,7 @@ using MoonTools.ECS;
 using Riptide;
 using RiptideFNATankClient.Networking;
 using RiptideFNATankCommon;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
 using Wombat.Engine;

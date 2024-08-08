@@ -10,8 +10,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Components;
+namespace RiptideFNATankCommon.Gameplay.Components;
 
-public readonly record struct ClientSequenceComponent(
-    uint Value
+public readonly record struct DirectionalSpeedComponent(
+    float DirectionInRadians,
+    float Speed
 );

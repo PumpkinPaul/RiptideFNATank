@@ -15,7 +15,7 @@ using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankCommon;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
 

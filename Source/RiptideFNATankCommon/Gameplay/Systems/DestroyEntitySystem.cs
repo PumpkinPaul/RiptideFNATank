@@ -11,33 +11,27 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 */
 
 using MoonTools.ECS;
-using RiptideFNATankCommon.Components;
 
-namespace RiptideFNATankCommon.Systems;
+namespace RiptideFNATankCommon.Gameplay.Systems;
+
+public readonly record struct DestroyEntityMessage(
+    Entity Entity
+);
 
 /// <summary>
-/// Responsible for moving entities by updating their positions from their velocity.
+/// Removes 'dead' entities from the world.
 /// </summary>
-public sealed class MovementSystem : MoonTools.ECS.System
+public sealed class DestroyEntitySystem : MoonTools.ECS.System
 {
-    readonly Filter _filter;
-
-    public MovementSystem(World world) : base(world)
+    public DestroyEntitySystem(World world) : base(world)
     {
-        _filter = FilterBuilder
-            .Include<PositionComponent>()
-            .Include<VelocityComponent>()
-            .Build();
     }
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var entity in _filter.Entities)
+        foreach (var message in ReadMessages<DestroyEntityMessage>())
         {
-            ref readonly var position = ref Get<PositionComponent>(entity);
-            ref readonly var velocity = ref Get<VelocityComponent>(entity);
-
-            Set(entity, new PositionComponent(position.Value + velocity.Value));
+            Destroy(message.Entity);
         }
     }
 }

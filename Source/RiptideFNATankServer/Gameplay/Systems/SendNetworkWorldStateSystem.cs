@@ -14,14 +14,13 @@ using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using Riptide;
 using RiptideFNATankCommon;
-using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Extensions;
+using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
-using RiptideFNATankServer.Gameplay;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
 
-namespace RiptideFNATankServer.Systems;
+namespace RiptideFNATankServer.Gameplay.Systems;
 
 /// <summary>
 /// Sends the world state to clients.

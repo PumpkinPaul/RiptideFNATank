@@ -12,10 +12,10 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 
-namespace RiptideFNATankServer.Systems;
+namespace RiptideFNATankServer.Gameplay.Systems;
 
 public readonly record struct PlayerSpawnMessage(
     ushort ClientId,

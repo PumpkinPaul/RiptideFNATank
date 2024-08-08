@@ -12,9 +12,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 
-namespace RiptideFNATankCommon.Systems;
+namespace RiptideFNATankCommon.Gameplay.Systems;
 
 /// <summary>
 /// Reads remote match data received messages and applies the new values to the 'simulation state' - e.g. the normal component data

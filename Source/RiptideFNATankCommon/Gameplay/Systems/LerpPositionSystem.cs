@@ -12,9 +12,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 
-namespace RiptideFNATankCommon.Systems;
+namespace RiptideFNATankCommon.Gameplay.Systems;
 
 /// <summary>
 /// Interpolates a network entity's position from a source to a target postion over a series of updates

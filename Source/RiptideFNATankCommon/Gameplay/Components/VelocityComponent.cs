@@ -10,9 +10,10 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Components;
+using Microsoft.Xna.Framework;
 
-public readonly record struct PlayerCommandsComponent(
-    bool MoveUp,
-    bool MoveDown
+namespace RiptideFNATankCommon.Gameplay.Components;
+
+public readonly record struct VelocityComponent(
+    Vector2 Value
 );

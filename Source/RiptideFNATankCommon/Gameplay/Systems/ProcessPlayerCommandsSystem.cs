@@ -10,28 +10,40 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Xna.Framework;
 using MoonTools.ECS;
+using RiptideFNATankCommon.Gameplay.Components;
 
-namespace RiptideFNATankCommon.Systems;
-
-public readonly record struct DestroyEntityMessage(
-    Entity Entity
-);
+namespace RiptideFNATankCommon.Gameplay.Systems;
 
 /// <summary>
-/// Removes 'dead' entities from the world.
+/// Handles player actions (initiate a jump, fire a weapon, move a paddle)
 /// </summary>
-public sealed class DestroyEntitySystem : MoonTools.ECS.System
+public sealed class ProcessPlayerCommandsSystem : MoonTools.ECS.System
 {
-    public DestroyEntitySystem(World world) : base(world)
+    // TODO: move this to 'Tank stats'
+    public const int PADDLE_SPEED = 5;
+
+    readonly Filter _filter;
+
+    public ProcessPlayerCommandsSystem(World world) : base(world)
     {
+        _filter = FilterBuilder
+            .Include<PlayerCommandsComponent>()
+            .Build();
     }
 
     public override void Update(TimeSpan delta)
     {
-        foreach (var message in ReadMessages<DestroyEntityMessage>())
+        foreach (var entity in _filter.Entities)
         {
-            Destroy(message.Entity);
+            ref readonly var gameInput = ref Get<PlayerCommandsComponent>(entity);
+
+            var moveUpSpeed = gameInput.MoveUp ? PADDLE_SPEED : 0;
+            var moveDownSpeed = gameInput.MoveDown ? -PADDLE_SPEED : 0;
+
+            Set(entity, new VelocityComponent(
+                new Vector2(0, moveUpSpeed + moveDownSpeed)));
         }
     }
 }

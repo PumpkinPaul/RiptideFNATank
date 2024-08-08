@@ -10,9 +10,13 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankCommon.Components;
+using Microsoft.Xna.Framework;
 
-public readonly record struct DirectionalSpeedComponent(
-    float DirectionInRadians,
-    float Speed
-);
+namespace RiptideFNATankCommon.Gameplay.Components;
+
+public record struct LerpPositionComponent
+{
+    public Vector2 ToPosition;
+    public Vector2 FromPosition;
+    public float Timer;
+}

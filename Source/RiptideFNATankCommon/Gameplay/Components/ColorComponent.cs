@@ -10,33 +10,10 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-using MoonTools.ECS;
-using RiptideFNATankCommon.Components;
-using Wombat.Engine;
+using Microsoft.Xna.Framework;
 
-namespace RiptideFNATankCommon.Systems;
+namespace RiptideFNATankCommon.Gameplay.Components;
 
-/// <summary>
-/// Responsible for turning directional speed into a velocity.
-/// </summary>
-public class DirectionalSpeedSystem : MoonTools.ECS.System
-{
-    readonly Filter _filter;
-
-    public DirectionalSpeedSystem(World world) : base(world)
-    {
-        _filter = FilterBuilder
-           .Include<DirectionalSpeedComponent>()
-           .Build();
-    }
-
-    public override void Update(TimeSpan delta)
-    {
-        foreach (var entity in _filter.Entities)
-        {
-            ref readonly var component = ref Get<DirectionalSpeedComponent>(entity);
-
-            Set(entity, new VelocityComponent(VectorHelper.Polar(component.DirectionInRadians, component.Speed)));
-        }
-    }
-}
+public readonly record struct ColorComponent(
+    Color Value
+);

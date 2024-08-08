@@ -12,7 +12,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
 using RiptideFNATankCommon;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
 

@@ -10,10 +10,8 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-using Microsoft.Xna.Framework;
+namespace RiptideFNATankCommon.Gameplay.Components;
 
-namespace RiptideFNATankCommon.Components;
-
-public readonly record struct ScaleComponent(
-    Vector2 Value
+public readonly record struct ClientSequenceComponent(
+    uint Value
 );

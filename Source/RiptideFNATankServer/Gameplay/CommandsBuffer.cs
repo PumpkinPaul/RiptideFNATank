@@ -11,7 +11,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 */
 
 using RiptideFNATankCommon;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 
 namespace RiptideFNATankServer.Gameplay;
 

@@ -12,11 +12,10 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using MoonTools.ECS;
 using RiptideFNATankCommon;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
-using RiptideFNATankServer.Gameplay;
 
-namespace RiptideFNATankServer.Systems;
+namespace RiptideFNATankServer.Gameplay.Systems;
 
 /// <summary>
 /// 

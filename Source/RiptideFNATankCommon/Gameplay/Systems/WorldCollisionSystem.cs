@@ -12,10 +12,10 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATankCommon.Components;
+using RiptideFNATankCommon.Gameplay.Components;
 using Wombat.Engine;
 
-namespace RiptideFNATankCommon.Systems;
+namespace RiptideFNATankCommon.Gameplay.Systems;
 
 /// <summary>
 /// Responsible for performing entity to world collision calculations.

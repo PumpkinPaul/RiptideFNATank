@@ -12,12 +12,8 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework;
 
-namespace RiptideFNATankCommon.Components;
+namespace RiptideFNATankCommon.Gameplay.Components;
 
-public record struct TankState
-{
-    public Vector2 Position;
-    public Vector2 Velocity;
-    public bool MoveUp;
-    public bool MoveDown;
-}
+public record struct PositionComponent(
+    Vector2 Value
+);
