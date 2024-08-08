@@ -17,7 +17,6 @@ using Microsoft.Xna.Framework.Graphics;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankServer.Gameplay;
-using RiptideFNATankServer.Gameplay.Systems;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
 

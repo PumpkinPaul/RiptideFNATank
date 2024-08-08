@@ -17,8 +17,8 @@ using RiptideFNATankCommon;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankCommon.Systems;
 using RiptideFNATankServer.Gameplay.Renderers;
-using RiptideFNATankServer.Gameplay.Systems;
 using RiptideFNATankServer.Networking;
+using RiptideFNATankServer.Systems;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
 using static RiptideFNATankServer.Networking.ServerNetworkManager;
@@ -53,7 +53,7 @@ public class ServerECSManager
 
     // T 
     readonly Dictionary<ushort, uint> _clientAcks = [];
-    readonly Dictionary<ushort, PriorityQueue<ClientPlayerActions, uint>> _clientPlayerActions = [];
+    readonly Dictionary<ushort, CommandsBuffer> _clientPlayerActions = [];
 
     public ServerECSManager(
         ServerNetworkManager networkGameManager,
@@ -128,7 +128,7 @@ public class ServerECSManager
         // How do we feel about this being outside of a system?
         ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
 
-        Logger.Success($"Command Frame: {simulationState.CurrentServerCommandFrame}");
+        //Logger.Success($"Command Frame: {simulationState.CurrentServerCommandFrame}");
 
         SendAllQueuedECSMessages();
 

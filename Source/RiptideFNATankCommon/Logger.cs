@@ -27,7 +27,7 @@ public static class Logger
     {
         var timestamp = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffff}";
         Console.ForegroundColor = color;
-        var message = $"{Thread.CurrentThread.ManagedThreadId} - {timestamp} - {value}";
+        var message = $"{timestamp} - {value}";
         Console.WriteLine(message);
         System.Diagnostics.Debug.WriteLine(message);
 

@@ -64,7 +64,7 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
             // Instead of syncing the command frames directly, we need to fast forward the client some command frames!
 
             // TODO: dynamically calculate this.
-            uint halfRTTInCommandFrame = 2;
+            uint halfRTTInCommandFrame = 3;
             simulationState.CurrentClientCommandFrame = message.InitialServerCommandFrame + NetworkSettings.COMMAND_BUFFER_SIZE + halfRTTInCommandFrame;
             simulationState.InitialClientCommandFrame = simulationState.CurrentClientCommandFrame;
             simulationState.ServerReceivedClientCommandFrame = simulationState.CurrentClientCommandFrame - 1;

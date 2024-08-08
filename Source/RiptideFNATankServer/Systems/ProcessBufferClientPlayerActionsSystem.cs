@@ -14,8 +14,9 @@ using MoonTools.ECS;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
+using RiptideFNATankServer.Gameplay;
 
-namespace RiptideFNATankServer.Gameplay.Systems;
+namespace RiptideFNATankServer.Systems;
 
 /// <summary>
 /// 
@@ -23,14 +24,14 @@ namespace RiptideFNATankServer.Gameplay.Systems;
 public sealed class ProcessBufferClientPlayerActionsSystem : MoonTools.ECS.System
 {
     readonly PlayerEntityMapper _playerEntityMapper;
-    readonly Dictionary<ushort, PriorityQueue<ClientPlayerActions, uint>> _clientPlayerActionsBuffer;
+    readonly Dictionary<ushort, CommandsBuffer> _clientPlayerActionsBuffer;
 
     readonly Filter _filter;
 
     public ProcessBufferClientPlayerActionsSystem(
         World world,
         PlayerEntityMapper playerEntityMapper,
-        Dictionary<ushort, PriorityQueue<ClientPlayerActions, uint>> clientPlayerActionsBuffer
+        Dictionary<ushort, CommandsBuffer> clientPlayerActionsBuffer
     ) : base(world)
     {
         _playerEntityMapper = playerEntityMapper;
@@ -55,32 +56,10 @@ public sealed class ProcessBufferClientPlayerActionsSystem : MoonTools.ECS.Syste
             if (_clientPlayerActionsBuffer.TryGetValue(clientId, out var playerActionsQueue) == false)
                 continue;
 
-            // Look in the buffer for a player command for the current command frame.
-            // If there isn't one then the previous command will be used (the component will already contain the values used last command frame)
+            var playerActions = playerActionsQueue.Remove(simulationState.CurrentServerCommandFrame);
+            Set(entity, playerActions);
 
-            if (playerActionsQueue.Count == 0)
-            {
-                // TODO: we probably need to stamp the outgoing state with a 'no input increase client sim tick rate' flag
-                Logger.Warning($"{nameof(ProcessBufferClientPlayerActionsSystem)}: Ran out of client commands on command frame: {simulationState.CurrentServerCommandFrame}");
-                continue;
-            }
-
-            // Remove any old stale input that is for command frames in the past.
-            ClientPlayerActions bufferedPlayerActions;
-            uint bufferCommandFramePriority;
-            while (playerActionsQueue.TryPeek(out bufferedPlayerActions, out bufferCommandFramePriority) && bufferCommandFramePriority < simulationState.CurrentServerCommandFrame)
-            {
-                playerActionsQueue.Dequeue();
-            }
- 
-            // Skip if the remaining actions are for future command frames
-            if (bufferCommandFramePriority > simulationState.CurrentServerCommandFrame)
-                continue;
-
-            // The buffered actions are for this command frame - apply them to the entity state
-            Set(entity, new PlayerActionsComponent(bufferedPlayerActions.MoveUp, bufferedPlayerActions.MoveDown));
-
-            Logger.Debug($"{nameof(ProcessBufferClientPlayerActionsSystem)}: Applied buffered client commands - bufferedPlayerActions: {bufferedPlayerActions}");
+            Logger.Debug($"{nameof(ProcessBufferClientPlayerActionsSystem)}: Applied buffered client commands for command frame :{simulationState.CurrentServerCommandFrame} - {playerActions}");
         }
     }
 }

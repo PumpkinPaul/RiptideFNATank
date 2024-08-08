@@ -15,7 +15,7 @@ using MoonTools.ECS;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Networking;
 
-namespace RiptideFNATankServer.Gameplay.Systems;
+namespace RiptideFNATankServer.Systems;
 
 public readonly record struct PlayerSpawnMessage(
     ushort ClientId,

@@ -17,10 +17,11 @@ using RiptideFNATankCommon;
 using RiptideFNATankCommon.Components;
 using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
+using RiptideFNATankServer.Gameplay;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
 
-namespace RiptideFNATankServer.Gameplay.Systems;
+namespace RiptideFNATankServer.Systems;
 
 /// <summary>
 /// Sends the world state to clients.
@@ -59,13 +60,13 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
         foreach (var entity in _filter.Entities)
         {
             var clientId = _playerEntityMapper.GetClientIdFromEntity(entity);
-            
+
             ref readonly var position = ref Get<PositionComponent>(entity);
             _worldState[clientId] = position.Value;
         }
 
         // Send the world State
-        foreach(var client in _worldState)
+        foreach (var client in _worldState)
         {
             //Simulate out of order packets
             var serverCommandFrame = RandomHelper.FastRandom.PercentageChance(_networkGameManager.OutOfOrderPacketPercentage)
