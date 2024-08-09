@@ -189,8 +189,9 @@ public class ClientECSManager
 
         SendAllQueuedMessages();
 
+        // Always use the physics tick even when catching up?
         foreach (var system in _systems)
-            system.Update(BaseGame.Instance.TargetElapsedTime);
+            system.Update(NetworkSettings.PhsyicsTimeSpan);
 
         _world.FinishUpdate();
 

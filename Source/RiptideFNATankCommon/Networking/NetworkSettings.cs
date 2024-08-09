@@ -15,7 +15,14 @@ namespace RiptideFNATankCommon.Networking;
 
 public static class NetworkSettings
 {
-    public const float SERVER_FPS = 60.0f;
+    public const float SIMULATION_NORMAL_FPS = 60.0f;
+    public const float SIMULATION_CATCH_UP_FPS = 66.0f;
+    public const float SIMULATION_SLOW_DOWN_FPS = 56.0f;
+
+    public static TimeSpan PhsyicsTimeSpan { get; } = TimeSpan.FromSeconds(1.0f / SIMULATION_NORMAL_FPS);
+    public static TimeSpan SpeedUpTimeSpan { get; } = TimeSpan.FromSeconds(1.0f / SIMULATION_CATCH_UP_FPS);
+    public static TimeSpan SlowDownTimeSpan { get; } = TimeSpan.FromSeconds(1.0f / SIMULATION_SLOW_DOWN_FPS);
+
     public const int BUFFER_SIZE = 1024;
 
     public const ushort PORT = 17871;

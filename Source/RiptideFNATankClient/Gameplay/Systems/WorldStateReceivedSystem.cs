@@ -17,6 +17,7 @@ using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
+using Wombat.Engine;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
@@ -59,7 +60,6 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
     {
         ref var simulationState = ref GetSingleton<SimulationStateComponent>();
 
-        // TODO: I think we need to buffer these to avoid jitter.
         foreach (var message in ReadMessages<ReceivedWorldStateMessage>())
         {
             if (UDPHelper.IsValidPacket(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame) == false)
@@ -84,6 +84,14 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
                 var idx = _serverPlayerStateSnapshots.Set(simulationState.LastReceivedServerCommandFrame, serverPlayerState);
 
                 Logger.Info($"{nameof(WorldStateReceivedSystem)}: Got server state for command frame: {simulationState.LastReceivedServerCommandFrame} (idx: {idx}), Position: {serverPlayerState.Position}");
+
+                var actual = simulationState.CurrentClientCommandFrame - simulationState.LastReceivedServerCommandFrame;
+                var desired = NetworkSettings.COMMAND_BUFFER_SIZE + 3;
+
+                if (simulationState.CurrentClientCommandFrame > simulationState.LastReceivedServerCommandFrame + NetworkSettings.COMMAND_BUFFER_SIZE + 3)
+                    ((ClientGame)BaseGame.Instance).ChangeSimulationRate(-1, desired, actual);
+                else if (simulationState.CurrentClientCommandFrame < simulationState.LastReceivedServerCommandFrame + NetworkSettings.COMMAND_BUFFER_SIZE + 3)
+                    ((ClientGame)BaseGame.Instance).ChangeSimulationRate(1, desired, actual);
             }
             else
             {

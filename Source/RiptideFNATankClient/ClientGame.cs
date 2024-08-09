@@ -50,6 +50,9 @@ public class ClientGame : BaseGame
         Logger.Info($"{Window.Title}");
         Logger.Info("==================================================");
 
+        // This can fluctuate on the client if the client needs to speed up and send more inputs to the server.
+        TargetElapsedTime = NetworkSettings.PhsyicsTimeSpan;
+
         _playerProfile = PlayerProfile.LoadOrCreate(LocalApplicationDataPath);
 
         _networkGameManager = new NetworkGameManager("127.0.0.1", NetworkSettings.PORT);
@@ -71,6 +74,20 @@ public class ClientGame : BaseGame
 
         GamePhaseManager.Initialise();
         GamePhaseManager.ChangePhase<MainMenuPhase>();
+    }
+
+    public void ChangeSimulationRate(float rate, int desiredDifference, uint actualDifference)
+    {
+        if (rate > 0)
+        {
+            TargetElapsedTime = NetworkSettings.SpeedUpTimeSpan;
+            Logger.Error($"Desired difference: {desiredDifference}, actualDifference: {actualDifference} Client SpeedUp >>>>>>>>>>");
+        }
+        else if (rate < 0)
+        {
+            TargetElapsedTime = NetworkSettings.SlowDownTimeSpan;
+            Logger.Warning($"Desired difference: {desiredDifference}, actualDifference: {actualDifference} Client Slowdown <<<<<<<<<<");
+        }
     }
 
     protected override void OnUpdate(GameTime gameTime)
