@@ -10,7 +10,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Karambolo.Extensions.Logging.File;
 using Microsoft.Extensions.Logging;
+using Wombat.Engine.Logging.File;
 
 namespace Wombat.Engine.Logging;
 
@@ -37,21 +39,27 @@ public static class Logger
             builder.AddCustomConsoleFormatter(options =>
             {
                 options.IncludeScopes = true;
+                options.FullColorMessages = LogLevel.Trace;
                 options.SingleLine = true;
                 options.TimestampFormat = "HH:mm:ss.ffff ";
                 options.CustomPrefix = " >>> ";
+            })
+            .SetMinimumLevel(LogLevel.Information)
+            .AddFile(o => {
+                o.RootPath = AppContext.BaseDirectory;
+                o.TextBuilder = SingleLineLogEntryTextBuilder.Default;
+                o.DateFormat = "HH:mm:ss.ffff";
+                o.Files = [new LogFileOptions { Path = "test.log", MinLevel = new Dictionary<string, LogLevel> { { "Default", LogLevel.Trace } } }];
             }));
 
         Log = _loggerFactory.CreateLogger(nameof(CustomConsoleFormatter));
     }
 
-    public static void Trace(string value) => WriteLineInternal(value, ConsoleColor.DarkGray);
     public static void Debug(string value) => WriteLineInternal(value, ConsoleColor.DarkCyan);
     public static void Info(string value) => WriteLineInternal(value, ConsoleColor.White);
     public static void Success(string value) => WriteLineInternal(value, ConsoleColor.Green);
     public static void Warning(string value) => WriteLineInternal(value, ConsoleColor.Yellow);
     public static void Error(string value) => WriteLineInternal(value, ConsoleColor.Red);
-    public static void Critical(string value) => WriteLineInternal(value, ConsoleColor.Red);
 
     static void WriteLineInternal(string value, ConsoleColor color)
     {

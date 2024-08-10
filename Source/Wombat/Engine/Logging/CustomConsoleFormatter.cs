@@ -22,6 +22,7 @@ namespace Wombat.Engine.Logging;
 public sealed class CustomConsoleFormatterOptions : SimpleConsoleFormatterOptions
 {
     public string CustomPrefix { get; set; } = "Paul";
+    public LogLevel FullColorMessages { get; set; } = LogLevel.Warning;
     public bool WriteCategory { get; set; } = false;
     public bool WriteEventId { get; set; } = false;
 }
@@ -134,7 +135,7 @@ public sealed class CustomConsoleFormatter : ConsoleFormatter, IDisposable
 
         // scope information
         WriteScopeInformation(textWriter, scopeProvider, singleLine);
-        WriteMessage(textWriter, message, singleLine);
+        WriteMessage(textWriter, message, singleLine, logLevel, logLevelColors.Background, logLevelColors.Foreground);
 
         // Example:
         // System.InvalidOperationException
@@ -142,7 +143,7 @@ public sealed class CustomConsoleFormatter : ConsoleFormatter, IDisposable
         if (exception != null)
         {
             // exception message
-            WriteMessage(textWriter, exception, singleLine);
+            WriteMessage(textWriter, exception, singleLine, logLevel, logLevelColors.Background, logLevelColors.Foreground);
         }
         if (singleLine)
         {
@@ -150,7 +151,7 @@ public sealed class CustomConsoleFormatter : ConsoleFormatter, IDisposable
         }
     }
 
-    void WriteMessage(TextWriter textWriter, string message, bool singleLine)
+    void WriteMessage(TextWriter textWriter, string message, bool singleLine, LogLevel logLevel, ConsoleColor? background, ConsoleColor? foreground)
     {
         if (!string.IsNullOrEmpty(message))
         {
@@ -159,20 +160,24 @@ public sealed class CustomConsoleFormatter : ConsoleFormatter, IDisposable
                 if (FormatterOptions.WriteCategory)
                     textWriter.Write(' ');
 
-                WriteReplacing(textWriter, Environment.NewLine, " ", message);
+                WriteReplacing(textWriter, Environment.NewLine, " ", message, FormatterOptions, logLevel, background, foreground);
             }
             else
             {
                 textWriter.Write(_messagePadding);
-                WriteReplacing(textWriter, Environment.NewLine, _newLineWithMessagePadding, message);
+                WriteReplacing(textWriter, Environment.NewLine, _newLineWithMessagePadding, message, FormatterOptions, logLevel, background, foreground);
                 textWriter.Write(Environment.NewLine);
             }
         }
 
-        static void WriteReplacing(TextWriter writer, string oldValue, string newValue, string message)
+        static void WriteReplacing(TextWriter writer, string oldValue, string newValue, string message, CustomConsoleFormatterOptions options, LogLevel logLevel, ConsoleColor? background, ConsoleColor? foreground)
         {
             string newMessage = message.Replace(oldValue, newValue);
-            writer.Write(newMessage);
+
+            if (logLevel >= options.FullColorMessages)
+                writer.WriteColoredMessage(newMessage, background, foreground);
+            else
+                writer.Write(newMessage);
         }
     }
 
@@ -203,10 +208,10 @@ public sealed class CustomConsoleFormatter : ConsoleFormatter, IDisposable
         // since just setting one can look bad on the users console.
         return logLevel switch
         {
-            LogLevel.Trace => new ConsoleColors(ConsoleColor.Gray, ConsoleColor.Black),
+            LogLevel.Trace => new ConsoleColors(ConsoleColor.DarkCyan, ConsoleColor.Black),
             LogLevel.Debug => new ConsoleColors(ConsoleColor.Gray, ConsoleColor.Black),
             LogLevel.Information => new ConsoleColors(ConsoleColor.DarkGreen, ConsoleColor.Black),
-            LogLevel.Warning => new ConsoleColors(ConsoleColor.Yellow, ConsoleColor.Black),
+            LogLevel.Warning => new ConsoleColors(ConsoleColor.Black, ConsoleColor.DarkYellow),
             LogLevel.Error => new ConsoleColors(ConsoleColor.Black, ConsoleColor.DarkRed),
             LogLevel.Critical => new ConsoleColors(ConsoleColor.White, ConsoleColor.DarkRed),
             _ => new ConsoleColors(null, null)

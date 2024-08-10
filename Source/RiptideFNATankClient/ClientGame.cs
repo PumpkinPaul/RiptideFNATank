@@ -10,18 +10,27 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Wombat.Engine;
-using RiptideFNATankCommon;
-using System;
 using RiptideFNATankClient.Gameplay.GamePhases;
 using RiptideFNATankClient.Networking;
 using RiptideFNATankCommon.Networking;
+using System;
+using Wombat.Engine;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Client running too slow, speed up >>>>> - desired ({desiredDifference}) vs actual ({actualDifference})")]
+    public static partial void ClientRunningSlow(this ILogger logger, LogLevel logLevel, int desiredDifference, uint actualDifference);
+
+    [LoggerMessage(Message = "Client running too fast, slow down <<<<< - desired ({desiredDifference}) vs actual ({actualDifference})")]
+    public static partial void ClientRunningFast(this ILogger logger, LogLevel logLevel, int desiredDifference, uint actualDifference);
+}
 
 /// <summary>
 /// Very simple multiplayer implementation of the game, Tank using the Riptide framework, MoonTools.ECS and Quake3 style client / server multiplayer
@@ -82,12 +91,12 @@ public class ClientGame : BaseGame
         if (rate > 0)
         {
             TargetElapsedTime = NetworkSettings.SpeedUpTimeSpan;
-            Logger.Error($"Desired difference: {desiredDifference}, actualDifference: {actualDifference} Client SpeedUp >>>>>>>>>>");
+            Logger.Log.ClientRunningSlow(LogLevel.Warning, desiredDifference, actualDifference);
         }
         else if (rate < 0)
         {
             TargetElapsedTime = NetworkSettings.SlowDownTimeSpan;
-            Logger.Warning($"Desired difference: {desiredDifference}, actualDifference: {actualDifference} Client Slowdown <<<<<<<<<<");
+            Logger.Log.ClientRunningFast(LogLevel.Warning, desiredDifference, actualDifference);
         }
     }
 

@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
@@ -39,7 +38,7 @@ public record struct SimulationStateComponent(
 
 static partial class Log
 {
-    [LoggerMessage(EventId = 23, Message = "Received a valid packet from server for sequence: {sequence}.")]
+    [LoggerMessage(Message = "Received a valid packet from server for sequence: {sequence}.")]
     public static partial void PacketRecieved(this ILogger logger, LogLevel logLevel, uint sequence);
 }
 
@@ -73,14 +72,8 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
             if (UDPHelper.IsValidPacket(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame) == false)
                 continue;
 
-            //Log.Info($"Received a valid packet from server for sequence: {message.ServerCommandFrame}.");
-            Logger.Log.PacketRecieved(logLevel: LogLevel.Trace, sequence: message.ServerCommandFrame);
-            Logger.Log.PacketRecieved(logLevel: LogLevel.Debug, sequence: message.ServerCommandFrame);
             Logger.Log.PacketRecieved(logLevel: LogLevel.Information, sequence: message.ServerCommandFrame);
-            Logger.Log.PacketRecieved(logLevel: LogLevel.Warning, sequence: message.ServerCommandFrame);
-            Logger.Log.PacketRecieved(logLevel: LogLevel.Error, sequence: message.ServerCommandFrame);
-            Logger.Log.PacketRecieved(logLevel: LogLevel.Critical, sequence: message.ServerCommandFrame);
-            
+
             var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
             if (entity == PlayerEntityMapper.INVALID_ENTITY)
