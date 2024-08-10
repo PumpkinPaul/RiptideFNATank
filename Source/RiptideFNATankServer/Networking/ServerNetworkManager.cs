@@ -13,9 +13,9 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 using Microsoft.Xna.Framework;
 using Riptide;
 using Riptide.Utils;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
+using Wombat.Engine.Logging;
 
 namespace RiptideFNATankServer.Networking;
 

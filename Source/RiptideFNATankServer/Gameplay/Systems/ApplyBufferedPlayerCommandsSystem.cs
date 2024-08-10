@@ -14,6 +14,7 @@ using MoonTools.ECS;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
+using Wombat.Engine.Logging;
 
 namespace RiptideFNATankServer.Gameplay.Systems;
 

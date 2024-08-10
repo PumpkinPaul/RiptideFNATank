@@ -18,6 +18,7 @@ using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
 using System;
 using System.Collections.Generic;
+using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Networking;
 

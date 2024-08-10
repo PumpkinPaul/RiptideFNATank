@@ -1,4 +1,4 @@
-﻿/*
+/*
 __________.__        __  .__    .___       __________________      _____    ___________              __    
 \______   \__|______/  |_|__| __| _/____   \_   _____/\      \    /  _  \   \__    ___/____    ____ |  | __
  |       _/  \____ \   __\  |/ __ |/ __ \   |    __)  /   |   \  /  /_\  \    |    |  \__  \  /    \|  |/ /
@@ -10,13 +10,19 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-namespace RiptideFNATankServer;
+namespace Wombat.Engine.Logging;
 
-static class Program
+using Microsoft.Extensions.Logging;
+
+public static class ILoggingBuilderExtensions
 {
-    [STAThread]
-    static void Main()
+    public static ILoggingBuilder AddCustomConsoleFormatter(
+        this ILoggingBuilder builder,
+        Action<CustomConsoleFormatterOptions> configure
+    )
     {
-         new ServerGame().Run();
+        return builder
+            .AddConsole(options => options.FormatterName = $"{nameof(CustomConsoleFormatter)}")
+            .AddConsoleFormatter<CustomConsoleFormatter, CustomConsoleFormatterOptions>(configure);
     }
 }

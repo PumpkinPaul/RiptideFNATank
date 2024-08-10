@@ -17,6 +17,7 @@ using RiptideFNATankCommon;
 using RiptideFNATankCommon.Networking;
 using System;
 using Wombat.Engine;
+using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay.GamePhases;
 

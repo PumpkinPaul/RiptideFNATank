@@ -12,6 +12,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
+using Wombat.Engine.Logging;
 
 namespace RiptideFNATankServer.Gameplay;
 

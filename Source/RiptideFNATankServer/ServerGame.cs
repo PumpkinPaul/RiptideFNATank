@@ -19,6 +19,7 @@ using RiptideFNATankCommon.Networking;
 using RiptideFNATankServer.Gameplay;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
+using Wombat.Engine.Logging;
 
 /// <summary>
 /// Very simple multiplayer implementation of the server for the game, Tank using the Riptide framework, MoonTools.ECS and Quake3 style client / server multiplayer

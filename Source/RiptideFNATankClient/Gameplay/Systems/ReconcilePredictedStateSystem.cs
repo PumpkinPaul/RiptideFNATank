@@ -15,6 +15,7 @@ using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
+using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 

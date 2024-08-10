@@ -10,6 +10,8 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Wombat.Engine.Logging;
+
 namespace RiptideFNATankCommon.Networking;
 
 /// <summary>

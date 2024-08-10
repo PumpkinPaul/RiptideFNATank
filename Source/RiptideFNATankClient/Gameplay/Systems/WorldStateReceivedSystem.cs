@@ -10,6 +10,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
@@ -18,6 +19,7 @@ using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
 using Wombat.Engine;
+using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
 
@@ -34,6 +36,12 @@ public record struct SimulationStateComponent(
     uint CurrentClientCommandFrame,
     uint ServerReceivedClientCommandFrame
 );
+
+static partial class Log
+{
+    [LoggerMessage(EventId = 23, Message = "Received a valid packet from server for sequence: {sequence}.")]
+    public static partial void PacketRecieved(this ILogger logger, LogLevel logLevel, uint sequence);
+}
 
 /// <summary>
 /// Handles messages from the network manager indicating new world state has arrived.
@@ -65,8 +73,14 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
             if (UDPHelper.IsValidPacket(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame) == false)
                 continue;
 
-            Logger.Info($"Received a valid packet from server for sequence: {message.ServerCommandFrame}.");
-
+            //Log.Info($"Received a valid packet from server for sequence: {message.ServerCommandFrame}.");
+            Logger.Log.PacketRecieved(logLevel: LogLevel.Trace, sequence: message.ServerCommandFrame);
+            Logger.Log.PacketRecieved(logLevel: LogLevel.Debug, sequence: message.ServerCommandFrame);
+            Logger.Log.PacketRecieved(logLevel: LogLevel.Information, sequence: message.ServerCommandFrame);
+            Logger.Log.PacketRecieved(logLevel: LogLevel.Warning, sequence: message.ServerCommandFrame);
+            Logger.Log.PacketRecieved(logLevel: LogLevel.Error, sequence: message.ServerCommandFrame);
+            Logger.Log.PacketRecieved(logLevel: LogLevel.Critical, sequence: message.ServerCommandFrame);
+            
             var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
             if (entity == PlayerEntityMapper.INVALID_ENTITY)

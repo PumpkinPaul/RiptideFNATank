@@ -23,6 +23,7 @@ using RiptideFNATankCommon.Networking;
 using System.Collections.Generic;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
+using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay;
 
