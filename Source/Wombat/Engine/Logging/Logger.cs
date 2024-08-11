@@ -43,27 +43,39 @@ public static class Logger
                 options.SingleLine = true;
                 options.TimestampFormat = "HH:mm:ss.ffff ";
                 options.CustomPrefix = " >>> ";
+                options.WriteCategory = true;
             })
-            .SetMinimumLevel(LogLevel.Information)
+            .SetMinimumLevel(LogLevel.Trace)
             .AddFile(o => {
                 o.RootPath = AppContext.BaseDirectory;
                 o.TextBuilder = SingleLineLogEntryTextBuilder.Default;
                 o.DateFormat = "HH:mm:ss.ffff";
-                o.Files = [new LogFileOptions { Path = "test.log", MinLevel = new Dictionary<string, LogLevel> { { "Default", LogLevel.Trace } } }];
+                o.Files = [
+                    new LogFileOptions { 
+                        Path = "test.log",
+                        //MinLevel = new Dictionary<string, LogLevel> { 
+                        //    { "Default", LogLevel.Trace } 
+                        //} 
+                    }
+                ];
             }));
 
-        Log = _loggerFactory.CreateLogger(nameof(CustomConsoleFormatter));
+        //Log = _loggerFactory.CreateLogger(nameof(CustomConsoleFormatter));
+        //Log = _loggerFactory.CreateLogger("xtestx");
     }
 
+    public static void CreateLogger(string categoryName) => Log = _loggerFactory.CreateLogger(categoryName);
+
+    // These are used by Riptide for logging.
     public static void Debug(string value) => WriteLineInternal(value, ConsoleColor.DarkCyan);
     public static void Info(string value) => WriteLineInternal(value, ConsoleColor.White);
-    public static void Success(string value) => WriteLineInternal(value, ConsoleColor.Green);
     public static void Warning(string value) => WriteLineInternal(value, ConsoleColor.Yellow);
     public static void Error(string value) => WriteLineInternal(value, ConsoleColor.Red);
 
     static void WriteLineInternal(string value, ConsoleColor color)
     {
-        var timestamp = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffff}";
+        //var timestamp = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffff}";
+        var timestamp = $"{DateTime.UtcNow:o}";
         Console.ForegroundColor = color;
         var message = $"{timestamp} - {value}";
         Console.WriteLine(message);

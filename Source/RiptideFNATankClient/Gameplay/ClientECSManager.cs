@@ -10,13 +10,14 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MoonTools.ECS;
+using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankClient.Gameplay.Renderers;
 using RiptideFNATankClient.Gameplay.Systems;
 using RiptideFNATankClient.Networking;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Gameplay.Systems;
 using RiptideFNATankCommon.Networking;
@@ -26,6 +27,15 @@ using Wombat.Engine.Extensions;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "CommandBuffer is empty.")]
+    public static partial void CommandBufferIsEmpty(this ILogger logger, LogLevel logLevel);
+
+    [LoggerMessage(Message = "CommandBuffer only has future commands.")]
+    public static partial void CommandBufferOnlyHasFutureCommands(this ILogger logger, LogLevel logLevel);
+}
 
 /// <summary>
 /// Encapsulates management of the ECS
@@ -186,17 +196,18 @@ public class ClientECSManager
         // How do we feel about this being outside of a system?
         ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
 
-        Logger.Success($"Command Frame: {simulationState.CurrentClientCommandFrame}");
+        using (Logger.Log.BeginScope(("Client Command Frame", simulationState.CurrentClientCommandFrame)))
+        {
+            SendAllQueuedMessages();
 
-        SendAllQueuedMessages();
+            // Always use the physics tick even when catching up?
+            foreach (var system in _systems)
+                system.Update(NetworkSettings.PhsyicsTimeSpan);
 
-        // Always use the physics tick even when catching up?
-        foreach (var system in _systems)
-            system.Update(NetworkSettings.PhsyicsTimeSpan);
+            _world.FinishUpdate();
 
-        _world.FinishUpdate();
-
-        simulationState.CurrentClientCommandFrame++;
+            simulationState.CurrentClientCommandFrame++;
+        }
     }
 
     private void SendAllQueuedMessages()

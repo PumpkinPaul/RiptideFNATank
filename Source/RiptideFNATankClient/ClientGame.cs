@@ -30,6 +30,9 @@ static partial class Log
 
     [LoggerMessage(Message = "Client running too fast, slow down <<<<< - desired ({desiredDifference}) vs actual ({actualDifference})")]
     public static partial void ClientRunningFast(this ILogger logger, LogLevel logLevel, int desiredDifference, uint actualDifference);
+
+    [LoggerMessage(Message = "Starting game for {title}.")]
+    public static partial void StartClient(this ILogger logger, LogLevel logLevel, string title);
 }
 
 /// <summary>
@@ -56,9 +59,8 @@ public class ClientGame : BaseGame
     {
         Window.Title = "Riptide FNA Tank - CLIENT";
 
-        Logger.Info("==================================================");
-        Logger.Info($"{Window.Title}");
-        Logger.Info("==================================================");
+        Logger.CreateLogger("client");
+        Logger.Log.StartClient(LogLevel.Information, Window.Title);
 
         // This can fluctuate on the client if the client needs to speed up and send more inputs to the server.
         TargetElapsedTime = NetworkSettings.PhsyicsTimeSpan;

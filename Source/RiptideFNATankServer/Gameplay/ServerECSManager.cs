@@ -20,6 +20,7 @@ using RiptideFNATankServer.Gameplay.Systems;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
+using Wombat.Engine.Logging;
 using static RiptideFNATankServer.Networking.ServerNetworkManager;
 
 namespace RiptideFNATankServer.Gameplay;
@@ -127,7 +128,7 @@ public class ServerECSManager
         // How do we feel about this being outside of a system?
         ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
 
-        //Logger.Success($"Command Frame: {simulationState.CurrentServerCommandFrame}");
+        using (Logger.Log.BeginScope(("Client Command Frame", simulationState.CurrentServerCommandFrame)))
 
         SendAllQueuedECSMessages();
 

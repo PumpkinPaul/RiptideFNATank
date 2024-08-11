@@ -242,6 +242,9 @@ public sealed class CustomConsoleFormatter : ConsoleFormatter, IDisposable
             {
                 textWriter.Write(Environment.NewLine);
             }
+
+            if (singleLine)
+                textWriter.Write(' ');
         }
     }
 

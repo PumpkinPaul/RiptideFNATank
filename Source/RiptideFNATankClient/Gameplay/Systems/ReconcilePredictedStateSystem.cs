@@ -10,14 +10,22 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Xna.Framework;
 using MoonTools.ECS;
-using RiptideFNATankCommon;
+using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Local client prediction error at command frame: {commandFrame}. Predicted {predictedPosition} vs actual {actualPosition}")]
+    public static partial void ClientPredictionError(this ILogger logger, LogLevel logLevel, uint commandFrame, Vector2 predictedPosition, Vector2 actualPosition);
+}
 
 /// <summary>
 /// Reconciles the local player's predicted state with the actual world state received from the server.
@@ -58,8 +66,7 @@ public sealed class ReconcilePredictedStateSystem : MoonTools.ECS.System
             if (predictedState.Position != serverState.Position)
             {
                 // TODO: Reconcile and replay the local input
-                Logger.Error($"Local client prediction error at command frame: {simulationState.LastReceivedServerCommandFrame}");
-                Logger.Warning($"Predicted position: {predictedState.Position} vs actual position: {serverState.Position}");
+                Logger.Log.ClientPredictionError(LogLevel.Error, simulationState.LastReceivedServerCommandFrame, predictedState.Position, serverState.Position);
             }
         }
     }

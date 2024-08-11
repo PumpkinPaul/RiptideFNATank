@@ -12,14 +12,20 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 namespace RiptideFNATankServer;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Networking;
 using RiptideFNATankServer.Gameplay;
 using RiptideFNATankServer.Networking;
 using Wombat.Engine;
 using Wombat.Engine.Logging;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Starting game for {title}.")]
+    public static partial void StartServer(this ILogger logger, LogLevel logLevel, string title);
+}
 
 /// <summary>
 /// Very simple multiplayer implementation of the server for the game, Tank using the Riptide framework, MoonTools.ECS and Quake3 style client / server multiplayer
@@ -52,9 +58,8 @@ public class ServerGame : BaseGame
     {
         Window.Title = "Riptide FNA Tank - SERVER";
 
-        Logger.Info("==================================================");
-        Logger.Info($"{Window.Title}");
-        Logger.Info("==================================================");
+        Logger.CreateLogger("server");
+        Logger.Log.StartServer(LogLevel.Information, Window.Title);
 
         TargetElapsedTime = NetworkSettings.PhsyicsTimeSpan;
     }

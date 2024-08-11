@@ -10,6 +10,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using MoonTools.ECS;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
@@ -29,6 +30,12 @@ public readonly record struct PlayerCommandsReceivedMessage(
     bool MoveUp,
     bool MoveDown
 );
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Received valid commands from client for sequence: {sequence}, moveUp: {moveUp}, moveDown: {moveDown}")]
+    public static partial void PlayerCommandsReceived(this ILogger logger, LogLevel logLevel, uint sequence, bool moveUp, bool moveDown);
+}
 
 /// <summary>
 /// 
@@ -52,7 +59,7 @@ public sealed class ClientPlayerCommandsReceivedSystem : MoonTools.ECS.System
     {
         foreach (var message in ReadMessages<PlayerCommandsReceivedMessage>())
         {
-            Logger.Info($"{nameof(ClientPlayerCommandsReceivedSystem)}: Got inputs from client for command frame: {message.EffectiveClientCommandFrame}, message.MoveUp: {message.MoveUp}, message.MoveDown: {message.MoveDown}");
+            Logger.Log.PlayerCommandsReceived(logLevel: LogLevel.Information, sequence: message.EffectiveClientCommandFrame, message.MoveUp, message.MoveDown);
 
             CacheLatestCommandFrame(message);
             CacheClientPlayerCommands(message);

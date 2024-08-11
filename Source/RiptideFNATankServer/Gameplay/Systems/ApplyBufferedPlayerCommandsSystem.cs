@@ -10,13 +10,19 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using MoonTools.ECS;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankServer.Gameplay.Systems;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Applied buffered player commands for command frame: {effectiveCommandFrame} - {playerCommands}")]
+    public static partial void AppliedBufferedPlayerCommands(this ILogger logger, LogLevel logLevel, uint effectiveCommandFrame, PlayerCommandsComponent playerCommands);
+}
 
 /// <summary>
 /// 
@@ -64,7 +70,7 @@ public sealed class ApplyBufferedPlayerCommandsSystem : MoonTools.ECS.System
             var playerCommands = playerCommandsBuffer.Get(simulationState.CurrentServerCommandFrame);
             Set(entity, playerCommands);
 
-            Logger.Debug($"{nameof(ApplyBufferedPlayerCommandsSystem)}: Applied buffered player commands for command frame :{simulationState.CurrentServerCommandFrame} - {playerCommands}");
+            Logger.Log.AppliedBufferedPlayerCommands(logLevel: LogLevel.Debug, simulationState.CurrentServerCommandFrame, playerCommands);
         }
     }
 }

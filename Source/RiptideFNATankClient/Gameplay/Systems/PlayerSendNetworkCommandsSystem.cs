@@ -10,10 +10,11 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using MoonTools.ECS;
 using Riptide;
+using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankClient.Networking;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
@@ -21,6 +22,18 @@ using Wombat.Engine;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Sending client commands to server for command frame: {currentClientCommandFrame}, commandCount: {commandCount}")]
+    public static partial void SendPlayerCommands(this ILogger logger, LogLevel logLevel, uint currentClientCommandFrame, uint commandCount);
+
+    [LoggerMessage(Message = "Effective frame: {effectiveCommandFrame}, moveUp: {moveUp}, moveDown: {moveDown}")]
+    public static partial void PlayerCommandsForFrame(this ILogger logger, LogLevel logLevel, uint effectiveCommandFrame, bool moveUp, bool moveDown);
+
+    [LoggerMessage(Message = "Client is too far behind server, commandCount: {commandCount}, maxCommandCount: {maxCommandCount}")]
+    public static partial void ClientIsTooFarBegindServer(this ILogger logger, LogLevel logLevel, uint commandCount, uint maxCommandCount);
+}
 
 /// <summary>
 /// Sends the local player's actions to the server
@@ -63,7 +76,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
             const uint MAX_COMMAND_COUNT = 120;
             if (commandCount > MAX_COMMAND_COUNT)
             {
-                Logger.Error($"Client is too far behind server!");
+                Logger.Log.ClientIsTooFarBegindServer(LogLevel.Error, simulationState.CurrentClientCommandFrame, commandCount);
                 continue;
             }
 
@@ -78,7 +91,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
             message.AddUInt(simulationState.CurrentClientCommandFrame);
             message.AddByte((byte)commandCount);
 
-            Logger.Info($"{nameof(PlayerSendNetworkCommandsSystem)}: Send client commands to server for command frame: {simulationState.CurrentClientCommandFrame}, commandCount: {commandCount}");
+            Logger.Log.SendPlayerCommands(LogLevel.Information, simulationState.CurrentClientCommandFrame, commandCount);
 
             for (uint clientCommandFrame = simulationState.ServerReceivedClientCommandFrame + 1; clientCommandFrame <= simulationState.CurrentClientCommandFrame; clientCommandFrame++)
             {
@@ -87,7 +100,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
                 message.AddBool(playerActions.MoveUp);
                 message.AddBool(playerActions.MoveDown);
 
-                Logger.Debug($"Effective frame: {clientCommandFrame}, moveUp: {playerActions.MoveUp}, moveDown: {playerActions.MoveDown}");
+                Logger.Log.PlayerCommandsForFrame(LogLevel.Debug, simulationState.CurrentClientCommandFrame, playerActions.MoveUp, playerActions.MoveDown);
             }
 
             // Send a network packet containing the player's state.

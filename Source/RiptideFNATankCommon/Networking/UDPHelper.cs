@@ -10,9 +10,19 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankCommon.Networking;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Received an old packet for command frame: {justReceivedCommandFrame}. Already received a packet for CommandFrame: {lastReceivedCommandFrame}")]
+    public static partial void ReceivedOldPacket(this ILogger logger, LogLevel logLevel, uint justReceivedCommandFrame, uint lastReceivedCommandFrame);
+
+    [LoggerMessage(Message = "Received a duplicate packet for command frame: {commandFrame}.")]
+    public static partial void ReceivedDuplicatePacket(this ILogger logger, LogLevel logLevel, uint commandFrame);
+}
 
 /// <summary>
 /// Helper functions for UDP stuff.
@@ -33,14 +43,14 @@ public static class UDPHelper
         if (justReceivedCommandFrame < lastReceivedCommandFrame)
         {
             // Discard packet
-            Logger.Warning($"Received an old packet for CommandFrame: {justReceivedCommandFrame}. Already received a packet for CommandFrame: {lastReceivedCommandFrame}.");
+            Logger.Log.ReceivedOldPacket(LogLevel.Debug, justReceivedCommandFrame, lastReceivedCommandFrame);
             return false;
         }
         //HACK: Remove this when the server creates the state proper!
         else if (false && justReceivedCommandFrame == lastReceivedCommandFrame)
         {
             // Duplicate packet?
-            Logger.Warning($"Received a duplicate packet for CommandFrame: {justReceivedCommandFrame}.");
+            Logger.Log.ReceivedDuplicatePacket(LogLevel.Debug, justReceivedCommandFrame);
             return false;
         }
 

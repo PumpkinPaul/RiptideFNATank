@@ -10,10 +10,10 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using MoonTools.ECS;
 using Riptide;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
@@ -22,6 +22,12 @@ using Wombat.Engine;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankServer.Gameplay.Systems;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Send state to client for command frame: {commandFrame}, {state}")]
+    public static partial void SendState(this ILogger logger, LogLevel logLevel, uint commandFrame, Vector2 state);
+}
 
 /// <summary>
 /// Sends the world state to clients.
@@ -106,7 +112,7 @@ public sealed class SendNetworkWorldStateSystem : MoonTools.ECS.System
             // Send a network packet containing all the world state to a single player
             _networkGameManager.SendMessage(message, clientId);
 
-            Logger.Info($"{nameof(SendNetworkWorldStateSystem)}: Send server state for command frame: {serverCommandFrame}, position: {p}");
+            Logger.Log.SendState(LogLevel.Information, serverCommandFrame, p);
         }
     }
 }

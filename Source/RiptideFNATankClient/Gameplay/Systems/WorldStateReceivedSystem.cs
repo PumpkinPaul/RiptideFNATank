@@ -29,17 +29,13 @@ public readonly record struct ReceivedWorldStateMessage(
     Vector2 Position
 );
 
-public record struct SimulationStateComponent(
-    uint InitialClientCommandFrame,
-    uint LastReceivedServerCommandFrame,
-    uint CurrentClientCommandFrame,
-    uint ServerReceivedClientCommandFrame
-);
-
 static partial class Log
 {
     [LoggerMessage(Message = "Received a valid packet from server for sequence: {sequence}.")]
     public static partial void PacketRecieved(this ILogger logger, LogLevel logLevel, uint sequence);
+
+    [LoggerMessage(Message = "Got server state for command frame: {commandFrame} (idx: {idx}), Position: {position}.")]
+    public static partial void LocalPlayerStateReceived(this ILogger logger, LogLevel logLevel, uint commandFrame, uint idx, Vector2 position);
 }
 
 /// <summary>
@@ -72,7 +68,7 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
             if (UDPHelper.IsValidPacket(message.ServerCommandFrame, simulationState.LastReceivedServerCommandFrame) == false)
                 continue;
 
-            Logger.Log.PacketRecieved(logLevel: LogLevel.Information, sequence: message.ServerCommandFrame);
+            Logger.Log.PacketRecieved(logLevel: LogLevel.Debug, sequence: message.ServerCommandFrame);
 
             var entity = _playerEntityMapper.GetEntityFromClientId(message.ClientId);
 
@@ -90,7 +86,7 @@ public class WorldStateReceivedSystem : MoonTools.ECS.System
                 var serverPlayerState = new ServerPlayerState(message.Position);
                 var idx = _serverPlayerStateSnapshots.Set(simulationState.LastReceivedServerCommandFrame, serverPlayerState);
 
-                Logger.Info($"{nameof(WorldStateReceivedSystem)}: Got server state for command frame: {simulationState.LastReceivedServerCommandFrame} (idx: {idx}), Position: {serverPlayerState.Position}");
+                Logger.Log.LocalPlayerStateReceived(LogLevel.Debug, simulationState.LastReceivedServerCommandFrame, idx, serverPlayerState.Position);
 
                 var actual = simulationState.CurrentClientCommandFrame - simulationState.LastReceivedServerCommandFrame;
                 var desired = NetworkSettings.COMMAND_BUFFER_SIZE + 3;

@@ -10,16 +10,22 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using RiptideFNATankClient.Networking;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Networking;
 using System;
 using Wombat.Engine;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay.GamePhases;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Client has quit the match.")]
+    public static partial void QuitMatch(this ILogger logger, LogLevel logLevel);
+}
 
 /// <summary>
 /// Playing the game phase
@@ -92,7 +98,7 @@ public class PlayGamePhase : GamePhase
     /// </summary>
     public void QuitMatch()
     {
-        Logger.Info($"PlayGamePhase.QuitMatch");
+        Logger.Log.QuitMatch(LogLevel.Information);
 
         _networkGameManager.QuitMatch();
 

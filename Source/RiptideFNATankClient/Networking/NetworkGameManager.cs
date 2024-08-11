@@ -10,9 +10,11 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using Riptide;
 using Riptide.Utils;
+using RiptideFNATankClient.Gameplay;
 using RiptideFNATankCommon;
 using RiptideFNATankCommon.Extensions;
 using RiptideFNATankCommon.Networking;
@@ -38,6 +40,12 @@ public record ReceivedWorldStateEventArgs(
 public record RemovedPlayerEventArgs(
     ushort ClientId
 );
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Client has quit match.")]
+    public static partial void QuitMatch(this ILogger logger, LogLevel logLevel);
+}
 
 /// <summary>
 /// Responsible for managing a networked game.
@@ -163,7 +171,7 @@ public class NetworkGameManager
     /// </summary>
     public void QuitMatch()
     {
-        Logger.Info($"QuitMatch");
+        Logger.Log.QuitMatch(LogLevel.Information);
 
         // Destroy all existing player.
         foreach (var player in _players.Values)

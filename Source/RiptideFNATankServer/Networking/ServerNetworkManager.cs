@@ -10,6 +10,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework;
 using Riptide;
 using Riptide.Utils;
@@ -18,6 +19,12 @@ using RiptideFNATankCommon.Networking;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankServer.Networking;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Client: {clientId} disconnected from the server.")]
+    public static partial void ClientDisconnected(this ILogger logger, LogLevel logLevel, ushort clientId);
+}
 
 /// <summary>
 /// Responsible for managing a networked game on the server.
@@ -73,7 +80,7 @@ public class ServerNetworkManager
 
     private void ServerClientDisconnected(object sender, ServerDisconnectedEventArgs e)
     {
-        Logger.Debug($"{nameof(ServerClientDisconnected)} from client: {e.Client.Id}");
+        Logger.Log.ClientDisconnected(LogLevel.Information, e.Client.Id);
         _players.Remove(e.Client.Id);
     }
 

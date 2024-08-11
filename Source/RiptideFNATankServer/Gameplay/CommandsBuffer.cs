@@ -10,11 +10,20 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-using RiptideFNATankCommon;
+using Microsoft.Extensions.Logging;
 using RiptideFNATankCommon.Gameplay.Components;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankServer.Gameplay;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "CommandBuffer is empty.")]
+    public static partial void CommandBufferIsEmpty(this ILogger logger, LogLevel logLevel);
+
+    [LoggerMessage(Message = "CommandBuffer only has future commands.")]
+    public static partial void CommandBufferOnlyHasFutureCommands(this ILogger logger, LogLevel logLevel);
+}
 
 /// <summary>
 /// Responsible for storing player commands from a single client.
@@ -67,7 +76,7 @@ public class CommandsBuffer()
     {
         if (_playerCommandsBuffer.Count == 0)
         {
-            Logger.Warning("CommandBuffer is empty");
+            Logger.Log.CommandBufferIsEmpty(LogLevel.Warning);
             return _previousPlayerCommands;
         }
 
@@ -78,7 +87,7 @@ public class CommandsBuffer()
         // i.e. We have commands but they are for future frames
         if (EffectiveCommandFrame > currentCommandFrame)
         {
-            Logger.Warning("CommandBuffer only has future commands");
+            Logger.Log.CommandBufferOnlyHasFutureCommands(LogLevel.Warning);
             return _previousPlayerCommands;
         }
 

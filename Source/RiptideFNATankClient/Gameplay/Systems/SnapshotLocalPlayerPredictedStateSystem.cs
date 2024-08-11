@@ -10,15 +10,21 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
+using Microsoft.Extensions.Logging;
 using MoonTools.ECS;
 using RiptideFNATankClient.Gameplay.Components;
-using RiptideFNATankCommon;
 using RiptideFNATankCommon.Gameplay.Components;
 using RiptideFNATankCommon.Networking;
 using System;
 using Wombat.Engine.Logging;
 
 namespace RiptideFNATankClient.Gameplay.Systems;
+
+static partial class Log
+{
+    [LoggerMessage(Message = "Snapshot player state for command frame: {CurrentClientCommandFrame}, idx: {idx}, {state}.")]
+    public static partial void SnapshotPlayerState(this ILogger logger, LogLevel logLevel, uint currentClientCommandFrame, uint idx, LocalPlayerPredictedState state);
+}
 
 /// <summary>
 /// Caches player state in the snaphot buffer.
@@ -54,7 +60,7 @@ public sealed class SnapshotLocalPlayerPredictedStateSystem : MoonTools.ECS.Syst
                 position.Value);
 
             var idx = _localPlayerStateSnapshots.Set(simulationState.CurrentClientCommandFrame, localPlayerState);
-            Logger.Info($"Wrote local player state CurrentClientCommandFrame: {simulationState.CurrentClientCommandFrame}, resolves to idx: {idx}, LastReceivedServerCommandFrame: {simulationState.LastReceivedServerCommandFrame}, Position: {localPlayerState.Position}");
+            Logger.Log.SnapshotPlayerState(LogLevel.Information, simulationState.CurrentClientCommandFrame, idx, localPlayerState);
         }
     }
 }
