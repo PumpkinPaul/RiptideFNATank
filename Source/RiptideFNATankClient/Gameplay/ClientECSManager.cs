@@ -196,7 +196,7 @@ public class ClientECSManager
         // How do we feel about this being outside of a system?
         ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
 
-        using (Logger.Log.BeginScope(("Client Command Frame", simulationState.CurrentClientCommandFrame)))
+        using (Logger.Log.BeginScope(("Frame", simulationState.CurrentClientCommandFrame)))
         {
             SendAllQueuedMessages();
 

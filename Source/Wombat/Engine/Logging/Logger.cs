@@ -12,6 +12,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Karambolo.Extensions.Logging.File;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Wombat.Engine.Logging.File;
 
 namespace Wombat.Engine.Logging;
@@ -46,11 +47,12 @@ public static class Logger
                 options.WriteCategory = true;
             })
             .SetMinimumLevel(LogLevel.Trace)
-            .AddFile(o => {
-                o.RootPath = AppContext.BaseDirectory;
-                o.TextBuilder = SingleLineLogEntryTextBuilder.Default;
-                o.DateFormat = "HH:mm:ss.ffff";
-                o.Files = [
+            .AddFile(options => {
+                options.RootPath = AppContext.BaseDirectory;
+                options.IncludeScopes = true;
+                options.TextBuilder = SingleLineLogEntryTextBuilder.Default;
+                options.DateFormat = "HH:mm:ss.ffff";
+                options.Files = [
                     new LogFileOptions { 
                         Path = "test.log",
                         //MinLevel = new Dictionary<string, LogLevel> { 

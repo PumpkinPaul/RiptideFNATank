@@ -128,17 +128,18 @@ public class ServerECSManager
         // How do we feel about this being outside of a system?
         ref var simulationState = ref _world.GetSingleton<SimulationStateComponent>();
 
-        using (Logger.Log.BeginScope(("Client Command Frame", simulationState.CurrentServerCommandFrame)))
+        using (Logger.Log.BeginScope(("Frame", simulationState.CurrentServerCommandFrame)))
+        {
+            SendAllQueuedECSMessages();
 
-        SendAllQueuedECSMessages();
+            foreach (var system in _systems)
+                system.Update(gameTime.ElapsedGameTime);
 
-        foreach (var system in _systems)
-            system.Update(gameTime.ElapsedGameTime);
+            _world.FinishUpdate();
 
-        _world.FinishUpdate();
-
-        simulationState.CurrentServerCommandFrame++;
-        ServerGame.ServerCommandFrame = simulationState.CurrentServerCommandFrame;
+            simulationState.CurrentServerCommandFrame++;
+            ServerGame.ServerCommandFrame = simulationState.CurrentServerCommandFrame;
+        }
     }
 
     private void SendAllQueuedECSMessages()

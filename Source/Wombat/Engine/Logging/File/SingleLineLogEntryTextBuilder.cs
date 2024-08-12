@@ -26,7 +26,8 @@ internal class SingleLineLogEntryTextBuilder : FileLogEntryTextBuilder
         AppendTimestamp(sb, timestamp);
         AppendSeparator(sb);
         AppendLogLevel(sb, logLevel);
-        //AppendCategoryName(sb, categoryName);
+        AppendSeparator(sb);
+        AppendCategoryName(sb, categoryName);
         //AppendEventId(sb, eventId);
 
         if (scopeProvider != null)

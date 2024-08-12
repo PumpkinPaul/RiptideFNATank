@@ -100,7 +100,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
                 message.AddBool(playerActions.MoveUp);
                 message.AddBool(playerActions.MoveDown);
 
-                Logger.Log.PlayerCommandsForFrame(LogLevel.Debug, simulationState.CurrentClientCommandFrame, playerActions.MoveUp, playerActions.MoveDown);
+                Logger.Log.PlayerCommandsForFrame(LogLevel.Debug, clientCommandFrame, playerActions.MoveUp, playerActions.MoveDown);
             }
 
             // Send a network packet containing the player's state.
