@@ -43,14 +43,14 @@ public static class UDPHelper
         if (justReceivedCommandFrame < lastReceivedCommandFrame)
         {
             // Discard packet
-            Logger.Log.ReceivedOldPacket(LogLevel.Debug, justReceivedCommandFrame, lastReceivedCommandFrame);
+            Logger.Log.ReceivedOldPacket(LogLevel.Trace, justReceivedCommandFrame, lastReceivedCommandFrame);
             return false;
         }
         //HACK: Remove this when the server creates the state proper!
         else if (false && justReceivedCommandFrame == lastReceivedCommandFrame)
         {
             // Duplicate packet?
-            Logger.Log.ReceivedDuplicatePacket(LogLevel.Debug, justReceivedCommandFrame);
+            Logger.Log.ReceivedDuplicatePacket(LogLevel.Trace, justReceivedCommandFrame);
             return false;
         }
 

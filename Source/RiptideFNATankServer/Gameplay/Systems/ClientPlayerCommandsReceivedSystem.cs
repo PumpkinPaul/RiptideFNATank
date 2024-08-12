@@ -59,7 +59,7 @@ public sealed class ClientPlayerCommandsReceivedSystem : MoonTools.ECS.System
     {
         foreach (var message in ReadMessages<PlayerCommandsReceivedMessage>())
         {
-            Logger.Log.PlayerCommandsReceived(logLevel: LogLevel.Information, sequence: message.EffectiveClientCommandFrame, message.MoveUp, message.MoveDown);
+            Logger.Log.PlayerCommandsReceived(logLevel: LogLevel.Debug, sequence: message.EffectiveClientCommandFrame, message.MoveUp, message.MoveDown);
 
             CacheLatestCommandFrame(message);
             CacheClientPlayerCommands(message);

@@ -60,7 +60,7 @@ public sealed class SnapshotLocalPlayerPredictedStateSystem : MoonTools.ECS.Syst
                 position.Value);
 
             var idx = _localPlayerStateSnapshots.Set(simulationState.CurrentClientCommandFrame, localPlayerState);
-            Logger.Log.SnapshotPlayerState(LogLevel.Information, simulationState.CurrentClientCommandFrame, idx, localPlayerState);
+            Logger.Log.SnapshotPlayerState(LogLevel.Debug, simulationState.CurrentClientCommandFrame, idx, localPlayerState);
         }
     }
 }

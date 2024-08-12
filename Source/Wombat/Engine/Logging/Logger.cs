@@ -12,7 +12,6 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Karambolo.Extensions.Logging.File;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Wombat.Engine.Logging.File;
 
 namespace Wombat.Engine.Logging;
@@ -55,15 +54,9 @@ public static class Logger
                 options.Files = [
                     new LogFileOptions { 
                         Path = "test.log",
-                        //MinLevel = new Dictionary<string, LogLevel> { 
-                        //    { "Default", LogLevel.Trace } 
-                        //} 
                     }
                 ];
             }));
-
-        //Log = _loggerFactory.CreateLogger(nameof(CustomConsoleFormatter));
-        //Log = _loggerFactory.CreateLogger("xtestx");
     }
 
     public static void CreateLogger(string categoryName) => Log = _loggerFactory.CreateLogger(categoryName);

@@ -62,7 +62,7 @@ public sealed class SnapshotLocalPlayerCommandsSystem : MoonTools.ECS.System
             // ...a stream of actions that we can use to replay client inputs when reconciling state updates (server disagress with predicted client state)
             var idx = _playerActions.Set(simulationState.CurrentClientCommandFrame, playerActions);
 
-            Logger.Log.SnapshotPlayerCommands(LogLevel.Information, simulationState.CurrentClientCommandFrame, idx, playerActions);
+            Logger.Log.SnapshotPlayerCommands(LogLevel.Debug, simulationState.CurrentClientCommandFrame, idx, playerActions);
         }
     }
 }

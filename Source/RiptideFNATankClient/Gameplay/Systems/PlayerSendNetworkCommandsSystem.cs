@@ -91,7 +91,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
             message.AddUInt(simulationState.CurrentClientCommandFrame);
             message.AddByte((byte)commandCount);
 
-            Logger.Log.SendPlayerCommands(LogLevel.Information, simulationState.CurrentClientCommandFrame, commandCount);
+            Logger.Log.SendPlayerCommands(LogLevel.Debug, simulationState.CurrentClientCommandFrame, commandCount);
 
             for (uint clientCommandFrame = simulationState.ServerReceivedClientCommandFrame + 1; clientCommandFrame <= simulationState.CurrentClientCommandFrame; clientCommandFrame++)
             {
@@ -100,7 +100,7 @@ public sealed class PlayerSendNetworkCommandsSystem : MoonTools.ECS.System
                 message.AddBool(playerActions.MoveUp);
                 message.AddBool(playerActions.MoveDown);
 
-                Logger.Log.PlayerCommandsForFrame(LogLevel.Debug, clientCommandFrame, playerActions.MoveUp, playerActions.MoveDown);
+                Logger.Log.PlayerCommandsForFrame(LogLevel.Trace, clientCommandFrame, playerActions.MoveUp, playerActions.MoveDown);
             }
 
             // Send a network packet containing the player's state.
