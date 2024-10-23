@@ -14,9 +14,10 @@ using Microsoft.Xna.Framework;
 
 namespace RiptideFNATankCommon.Gameplay.Components;
 
-public record struct LerpPositionComponent
-{
-    public Vector2 ToPosition;
-    public Vector2 FromPosition;
-    public float Timer;
+public record struct LerpPositionComponent(
+    Vector2 ToPosition,
+    Vector2 FromPosition
+)
+{ 
+    public float Timer = 0;
 }

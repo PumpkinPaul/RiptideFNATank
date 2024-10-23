@@ -41,7 +41,7 @@ public static class Logger
                 options.IncludeScopes = true;
                 options.FullColorMessages = LogLevel.Trace;
                 options.SingleLine = true;
-                options.TimestampFormat = "HH:mm:ss.ffff ";
+                options.TimestampFormat = "HH:mm:ss.ffffff ";
                 options.CustomPrefix = " >>> ";
                 options.WriteCategory = true;
             })
@@ -50,7 +50,7 @@ public static class Logger
                 options.RootPath = AppContext.BaseDirectory;
                 options.IncludeScopes = true;
                 options.TextBuilder = SingleLineLogEntryTextBuilder.Default;
-                options.DateFormat = "HH:mm:ss.ffff";
+                options.DateFormat = "HH:mm:ss.ffffff";
                 options.Files = [
                     new LogFileOptions { 
                         Path = "test.log",
@@ -70,7 +70,7 @@ public static class Logger
     static void WriteLineInternal(string value, ConsoleColor color)
     {
         //var timestamp = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.ffff}";
-        var timestamp = $"{DateTime.UtcNow:o}";
+        var timestamp = $"{DateTime.UtcNow:HH:mm:ss.ffffff}";
         Console.ForegroundColor = color;
         var message = $"{timestamp} - {value}";
         Console.WriteLine(message);

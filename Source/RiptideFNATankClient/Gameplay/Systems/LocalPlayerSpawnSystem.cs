@@ -87,6 +87,7 @@ public class LocalPlayerSpawnSystem : MoonTools.ECS.System
 
             Set(entity, new PlayerInputComponent(message.PlayerIndex, message.MoveUpKey, message.MoveDownKey));
             Set(entity, new PositionComponent(message.Position));
+            Set(entity, new RotationComponent(1.78f));
             Set(entity, new ScaleComponent(new Vector2(16, 64)));
             Set(entity, new ColorComponent(message.Color));
             Set(entity, new VelocityComponent());

@@ -10,13 +10,8 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 */
 
-using Microsoft.Xna.Framework;
-using RiptideFNATankCommon.Gameplay.Components;
+namespace RiptideFNATankCommon.Gameplay.Components;
 
-namespace RiptideFNATankClient.Gameplay.Components;
-
-public record struct DisplayStateComponent
-{
-    public Vector2 Position;
-    public TankState PaddleState;
-}
+public record struct RotationComponent(
+    float AngleInRadians
+);

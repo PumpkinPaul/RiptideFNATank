@@ -96,8 +96,7 @@ public class ClientECSManager
 
         _systems = [
             new WorldStateReceivedSystem(_world, _playerEntityMapper, _serverPlayerStateSnapshots),
-            new ReconcilePredictedStateSystem(_world, _localPlayerActionsSnapshots, _localPlayerStateSnapshots, _serverPlayerStateSnapshots),
-
+            
             // Spawn the entities into the game world.
             new LocalPlayerSpawnSystem(_world, _playerEntityMapper),
             new RemotePlayerSpawnSystem(_world, _playerEntityMapper),
@@ -105,6 +104,8 @@ public class ClientECSManager
             // Get input from devices and turn into game actions.
             new PlayerInputSystem(_world),
             new SnapshotLocalPlayerCommandsSystem(_world, _localPlayerActionsSnapshots),
+
+            new ReconcilePredictedStateSystem(_world, _localPlayerActionsSnapshots, _localPlayerStateSnapshots, _serverPlayerStateSnapshots),
             
             // ====================================================================================================
             // World Simulation Start
@@ -135,7 +136,8 @@ public class ClientECSManager
             // Send player game actions to the server - do this after writing the predication snapshot!
             new PlayerSendNetworkCommandsSystem(_world, _localPlayerActionsSnapshots, _networkGameManager),
 
-            new LerpPositionSystem(_world),
+            new LerpDisplayStateSystem(_world),
+            //new LerpPositionSystem(_world),
         ];
 
         _spriteRenderer = new SpriteRenderer(_world, BaseGame.Instance.SpriteBatch);

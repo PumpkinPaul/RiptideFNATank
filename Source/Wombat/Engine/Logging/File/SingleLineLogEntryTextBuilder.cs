@@ -56,7 +56,8 @@ internal class SingleLineLogEntryTextBuilder : FileLogEntryTextBuilder
 
     protected override void AppendTimestamp(StringBuilder sb, DateTimeOffset timestamp)
     {
-        sb.Append(timestamp.ToLocalTime().ToString("o", CultureInfo.InvariantCulture));
+        //sb.Append(timestamp.ToLocalTime().ToString("o", CultureInfo.InvariantCulture));
+        sb.Append(timestamp.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss:ffffff", CultureInfo.InvariantCulture));
     }
 
     protected override void AppendLogLevel(StringBuilder sb, LogLevel logLevel)

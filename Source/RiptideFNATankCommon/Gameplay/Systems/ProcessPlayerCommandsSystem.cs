@@ -37,10 +37,10 @@ public sealed class ProcessPlayerCommandsSystem : MoonTools.ECS.System
     {
         foreach (var entity in _filter.Entities)
         {
-            ref readonly var gameInput = ref Get<PlayerCommandsComponent>(entity);
+            ref readonly var playerCommands = ref Get<PlayerCommandsComponent>(entity);
 
-            var moveUpSpeed = gameInput.MoveUp ? PADDLE_SPEED : 0;
-            var moveDownSpeed = gameInput.MoveDown ? -PADDLE_SPEED : 0;
+            var moveUpSpeed = playerCommands.MoveUp ? PADDLE_SPEED : 0;
+            var moveDownSpeed = playerCommands.MoveDown ? -PADDLE_SPEED : 0;
 
             Set(entity, new VelocityComponent(
                 new Vector2(0, moveUpSpeed + moveDownSpeed)));

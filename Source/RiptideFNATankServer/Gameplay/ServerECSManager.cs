@@ -89,7 +89,7 @@ public class ServerECSManager
             new DirectionalSpeedSystem(_world),
 
             // Collisions processors
-            new WorldCollisionSystem(_world, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT)),
+            new WorldCollisionSystem(_world, new Point(BaseGame.SCREEN_WIDTH, BaseGame.SCREEN_HEIGHT - 60)),
             new EntityCollisionSystem(_world),
 
             // Move the entities in the world

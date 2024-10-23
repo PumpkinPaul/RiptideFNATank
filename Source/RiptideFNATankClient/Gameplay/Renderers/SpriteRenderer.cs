@@ -12,6 +12,7 @@ Copyright Pumpkin Games Ltd. All Rights Reserved.
 
 using Microsoft.Xna.Framework.Graphics;
 using MoonTools.ECS;
+using RiptideFNATankClient.Gameplay.Components;
 using RiptideFNATankCommon.Gameplay.Components;
 using Wombat.Engine;
 using Wombat.Engine.Extensions;
@@ -46,10 +47,10 @@ public class SpriteRenderer : Renderer
             ref readonly var color = ref Get<ColorComponent>(entity);
 
             var pos = position.Value;
-            //if (Has<DisplayStateComponent>(entity))
+            if (Has<DisplayStateComponent>(entity))
             {
-                //ref readonly var displayState = ref Get<DisplayStateComponent>(entity);
-                //pos = displayState.PaddleState.Position;
+                 ref readonly var displayState = ref Get<DisplayStateComponent>(entity);
+                pos = displayState.Position;
             }
 
             var halfSize = scale.Value / 2;
